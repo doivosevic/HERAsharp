@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="data\ecoli_test_contigs.fasta" />
+    <None Remove="data\ecoli_test_reads.fasta" />
+    <None Remove="data\ecoli_test_reference.fasta" />
+    <None Remove="data\read_to_contig.paf" />
+    <None Remove="data\read_to_read.paf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="data\ecoli_test_contigs.fasta">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="data\ecoli_test_reads.fasta">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="data\ecoli_test_reference.fasta">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="data\read_to_contig.paf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="data\read_to_read.paf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>
