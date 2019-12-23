@@ -69,9 +69,9 @@ namespace herad
         public Overlap GetFlipped()
         {
             return new Overlap(
-            this.QuerySeqName, this.QuerySeqLen, this.QueryStartCoord, this.QueryEndCoord,
-            this.SameStrand,
             this.TargetSeqName, this.TargetSeqLen, this.TargetStartCoord, this.TargetEndCoord,
+            this.SameStrand,
+            this.QuerySeqName, this.QuerySeqLen, this.QueryStartCoord, this.QueryEndCoord,
             this.NumMatching, this.NumAll, this.Quality, null, null, null, null);
         }
     }

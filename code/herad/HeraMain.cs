@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,17 +10,53 @@ namespace herad
     {
         public static void Run()
         {
-            List<Seq> aSeqs;
-            Dictionary<string, List<Overlap>> contigReadsOverlapsDict, readsReadsOverlapsDict;
+            (List<Seq> aSeqs, Dictionary<string, List<Overlap>> allOverlaps) = SetupVariables();
 
-            SetupVariables(out aSeqs, out contigReadsOverlapsDict, out readsReadsOverlapsDict);
-            MainLogic(aSeqs, contigReadsOverlapsDict, readsReadsOverlapsDict);
+            MainLogic(aSeqs, allOverlaps);
         }
 
-        private static void SetupVariables(out List<Seq> aSeqs, out Dictionary<string, List<Overlap>> contigReadsOverlapsDict, out Dictionary<string, List<Overlap>> readsReadsOverlapsDict)
+        private static void Deserialize()
+        {
+            List<Seq> aSeqs;
+            Dictionary<string, List<Overlap>> allOverlaps;
+
+            string aSeqsJsonFileName = "aSeqsJson.txt";
+            string allOverlapsFileName = "allOverlapsJson.txt";
+
+            aSeqs = (List<Seq>)JsonConvert.DeserializeObject<List<Seq>>(File.ReadAllText(aSeqsJsonFileName));
+            allOverlaps = JsonConvert.DeserializeObject<Dictionary<string, List<Overlap>>>(File.ReadAllText(allOverlapsFileName));
+
+            MainLogic(aSeqs, allOverlaps);
+        }
+
+        private static void SerializeSetupObjects()
+        {
+            (List<Seq> aSeqs, Dictionary<string, List<Overlap>> allOverlaps) = SetupVariables();
+            string aSeqsJsonFileName = "aSeqsJson.txt";
+            string allOverlapsFileName = "allOverlapsJson.txt";
+
+            SerializeToFile(aSeqs, aSeqsJsonFileName);
+            SerializeToFile(allOverlaps, allOverlapsFileName);
+        }
+
+        private static void SerializeToFile(object objectToSerialize, string fileName)
+        {
+            JsonSerializer serializer = new JsonSerializer();
+            //serializer.Converters.Add(new JavaScriptDateTimeConverter());
+            //serializer.NullValueHandling = NullValueHandling.Ignore;
+
+            using (StreamWriter sw = new StreamWriter(fileName))
+            using (JsonWriter writer = new JsonTextWriter(sw))
+            {
+                serializer.Serialize(writer, objectToSerialize);
+                // {"ExpiryDate":new Date(1230375600000),"Price":0}
+            }
+        }
+
+        private static (List<Seq> aSeqs, Dictionary<string, List<Overlap>> allOverlaps) SetupVariables()
         {
             var contigs = ToDict(GetDataFile("contig"));
-            aSeqs = contigs.Select(c => new Seq(c.Key, c.Value, SeqType.A)).ToList();
+            var aSeqs = contigs.Select(c => new Seq(c.Key, c.Value, SeqType.A)).ToList();
             var reads = ToDict(GetDataFile("reads"));
             List<Seq> rSeqs = reads.Select(r => new Seq(r.Key, r.Value, SeqType.R)).ToList();
 
@@ -47,19 +84,36 @@ namespace herad
             var c2 = contigss.Select(c123 => refss.Contains(c123));
 
 
-            contigReadsOverlapsDict = CreateLookupDictOfOverlapsByName(readToContigOverlaps);
-            readsReadsOverlapsDict = CreateLookupDictOfOverlapsByName(readToReadOverlaps);
+            var contigReadsOverlapsDict = CreateLookupDictOfOverlapsByName(readToContigOverlaps);
+            var readsReadsOverlapsDict = CreateLookupDictOfOverlapsByName(readToReadOverlaps);
+
+            var allOverlaps = readsReadsOverlapsDict.ToDictionary(d => d.Key, d => d.Value);
+            contigReadsOverlapsDict.ToList().ForEach(p => { if (allOverlaps.ContainsKey(p.Key)) { allOverlaps[p.Key].AddRange(p.Value); } else { allOverlaps[p.Key] = p.Value.ToList(); } });
+
+            return (aSeqs, allOverlaps);
         }
 
-        private static void MainLogic(List<Seq> aSeqs, Dictionary<string, List<Overlap>> contigReadsOverlapsDict, Dictionary<string, List<Overlap>> readsReadsOverlapsDict)
+        private static void MainLogic(List<Seq> aSeqs, Dictionary<string, List<Overlap>> allOverlaps)
         {
-            var firstContig = aSeqs.First().Name;
-            var firstContigOverlaps = contigReadsOverlapsDict[firstContig];
 
-
-            Dictionary<string, List<Overlap>> allOverlaps = readsReadsOverlapsDict.Concat(contigReadsOverlapsDict).ToDictionary(d => d.Key, d => d.Value);
+            var firstContig = aSeqs.First().Name.Substring(1);
+            var firstContigOverlaps = allOverlaps[firstContig];
 
             List<Path> pathsUsingOverlapScore   = GetPathsUsingStrategy(allOverlaps, firstContigOverlaps, Strategies.GetBestOverlapByOverlapScore);
+
+            var byLen = pathsUsingOverlapScore.Select(o => (o.GetPathLength(), o)).OrderByDescending(p => p.Item1).ToList();
+
+            var groupSizes = byLen.Count() / 100;
+            var groups = new List<List<Path>>();
+            for (int i = 0; i < byLen.Count; i += groupSizes)
+            {
+                groups.Add(new List<Path>());
+                for (int j = 0; j < groupSizes && i + j < byLen.Count; j++)
+                {
+                    groups.Last().Add(byLen[i + j].Item2);
+                }
+            }
+
             List<Path> pathsUsingExtensionScore = GetPathsUsingStrategy(allOverlaps, firstContigOverlaps, Strategies.GetBestOverlapByExtensionScore);
             List<Path> pathsUsingMonteCarlo     = GetPathsUsingStrategy(allOverlaps, firstContigOverlaps, Strategies.GetBestOverlapByMonteCarlo);
 
@@ -122,7 +176,8 @@ namespace herad
                 .Concat(readToReadOverlaps.Select(r => (r.TargetSeqName, r.GetFlipped())));
 
             // Create a lookup table for looking up using entering nodes
-            Dictionary<string, List<Overlap>> readsReadsOverlapsDict = readsReadsOverlapsPairs.ToDictionary(r => r.Item1, r => new List<Overlap> { r.Item2 });
+            Dictionary<string, List<Overlap>> readsReadsOverlapsDict = readsReadsOverlapsPairs.Select(s => s.Item1).Distinct().ToDictionary(s => s, s => new List<Overlap>());
+            readsReadsOverlapsPairs.ToList().ForEach(p => readsReadsOverlapsDict[p.Item1].Add(p.Item2));
 
             return readsReadsOverlapsDict;
         }

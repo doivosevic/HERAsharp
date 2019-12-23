@@ -7,6 +7,10 @@ namespace herad
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
+
+            HeraMain.Run();
+
+            Console.WriteLine("Bye World!");
         }
 
     }

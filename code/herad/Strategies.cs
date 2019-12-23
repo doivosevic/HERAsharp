@@ -12,11 +12,11 @@ namespace herad
         public static Func<Path, List<Overlap>, Overlap> GetBestOverlapByExtensionScore =
                     // TODO: Paziti da je uvijek ulazna strana query a nikad target da ne bi bilo zabune
                     (next, neighbours) =>
-                            neighbours.OrderByDescending(n => n.ExtensionScore(true) * 1000 + n.Identity).FirstOrDefault(o => !next.Overlaps.Contains(o) && !next.LastSkips.Last().Contains(o));
+                            neighbours.OrderByDescending(n => n.ExtensionScore(true) * 1000 + n.Identity).FirstOrDefault(o => !next.ToSkip.Contains(o.TargetSeqName));
 
         public static Func<Path, List<Overlap>, Overlap> GetBestOverlapByOverlapScore =
                     (next, neighbours) =>
-                            neighbours.OrderByDescending(n => n.OverlapScore * 1000 + n.Identity).FirstOrDefault(o => !next.Overlaps.Contains(o) && !next.LastSkips.Last().Contains(o));
+                            neighbours.OrderByDescending(n => n.OverlapScore * 1000 + n.Identity).FirstOrDefault(o => !next.ToSkip.Contains(o.TargetSeqName));
 
         public static Func<Path, List<Overlap>, Overlap> GetBestOverlapByMonteCarlo =
                     (next, neighbours) => {
