@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 
 namespace herad
 {
@@ -7,7 +8,9 @@ namespace herad
     public class Overlap
     {
         // 1	string	Query sequence name
-        public string QuerySeqName { get; }
+        private string QuerySeqName { get; }
+
+        public int QuerySeqCodename { get; }
 
         // 2	int	Query sequence length
         public int QuerySeqLen { get; }
@@ -22,7 +25,9 @@ namespace herad
         public bool SameStrand { get; }
 
         // 6	string	Target sequence name
-        public string TargetSeqName { get; }
+        private string TargetSeqName { get; }
+
+        public int TargetSeqCodename { get; }
 
         // 7	int	Target sequence length
         public int TargetSeqLen { get; }
@@ -50,6 +55,19 @@ namespace herad
             this.QuerySeqName = n; this.QuerySeqLen = ql; this.QueryStartCoord = qs; this.QueryEndCoord = qe;
             this.SameStrand = ss; this.TargetSeqName = tn; this.TargetSeqLen = tl; this.TargetStartCoord = ts;
             this.TargetEndCoord = te; this.NumMatching = nm; this.NumAll = na; this.Quality = q;
+
+            this.QuerySeqCodename = GetCodename(this.QuerySeqName);
+            this.TargetSeqCodename = GetCodename(this.TargetSeqName);
+
+            this.OverlapScore = (this.QueryEndCoord - this.QueryStartCoord + this.TargetEndCoord - this.TargetStartCoord) * 1.0 / 2.0;
+            this.ExtensionScore1 = this.OverlapScore + this.QueryStartCoord / 2.0 + (this.QuerySeqLen - this.QueryEndCoord + this.TargetStartCoord) / 2.0;
+            this.ExtensionScore2 = this.OverlapScore + (this.TargetSeqLen - this.TargetEndCoord) / 2.0 + (this.QuerySeqLen - this.QueryEndCoord + this.TargetStartCoord) / 2.0;
+        }
+
+        private static int GetCodename(string name)
+        {
+            if (name.StartsWith("ctg")) return int.Parse(name.Substring("ctg".Length));
+            else return int.Parse(name.Substring("read".Length)) * 10;
         }
 
 
@@ -62,9 +80,12 @@ namespace herad
         /// 
         /// </summary>
         /// 
-        public double ExtensionScore(bool es1) => this.OverlapScore + (es1 ? this.QueryStartCoord : this.TargetSeqLen - this.TargetEndCoord) / 2.0 + (this.QuerySeqLen - this.QueryEndCoord + this.TargetStartCoord) / 2.0;
+        //public double ExtensionScore(bool es1) => this.OverlapScore + (es1 ? this.QueryStartCoord : this.TargetSeqLen - this.TargetEndCoord) / 2.0 + (this.QuerySeqLen - this.QueryEndCoord + this.TargetStartCoord) / 2.0;
 
-        public double OverlapScore => (this.QueryEndCoord - this.QueryStartCoord + this.TargetEndCoord - this.TargetStartCoord) * 1.0 / 2.0;
+        public double ExtensionScore1 { get; }
+        public double ExtensionScore2 { get; }
+
+        public double OverlapScore { get; }
 
         public Overlap GetFlipped()
         {

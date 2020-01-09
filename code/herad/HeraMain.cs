@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -10,7 +11,7 @@ namespace herad
     {
         public static void Run()
         {
-            (List<Seq> aSeqs, Dictionary<string, List<Overlap>> allOverlaps) = SetupVariables();
+            (List<Seq> aSeqs, Dictionary<int, List<Overlap>> allOverlaps) = SetupVariables();
 
             MainLogic(aSeqs, allOverlaps);
         }
@@ -18,20 +19,20 @@ namespace herad
         private static void Deserialize()
         {
             List<Seq> aSeqs;
-            Dictionary<string, List<Overlap>> allOverlaps;
+            Dictionary<int, List<Overlap>> allOverlaps;
 
             string aSeqsJsonFileName = "aSeqsJson.txt";
             string allOverlapsFileName = "allOverlapsJson.txt";
 
             aSeqs = (List<Seq>)JsonConvert.DeserializeObject<List<Seq>>(File.ReadAllText(aSeqsJsonFileName));
-            allOverlaps = JsonConvert.DeserializeObject<Dictionary<string, List<Overlap>>>(File.ReadAllText(allOverlapsFileName));
+            allOverlaps = JsonConvert.DeserializeObject<Dictionary<int, List<Overlap>>>(File.ReadAllText(allOverlapsFileName));
 
             MainLogic(aSeqs, allOverlaps);
         }
 
         private static void SerializeSetupObjects()
         {
-            (List<Seq> aSeqs, Dictionary<string, List<Overlap>> allOverlaps) = SetupVariables();
+            (List<Seq> aSeqs, Dictionary<int, List<Overlap>> allOverlaps) = SetupVariables();
             string aSeqsJsonFileName = "aSeqsJson.txt";
             string allOverlapsFileName = "allOverlapsJson.txt";
 
@@ -53,7 +54,7 @@ namespace herad
             }
         }
 
-        private static (List<Seq> aSeqs, Dictionary<string, List<Overlap>> allOverlaps) SetupVariables()
+        private static (List<Seq> aSeqs, Dictionary<int, List<Overlap>> allOverlaps) SetupVariables()
         {
             var contigs = ToDict(GetDataFile("contig"));
             var aSeqs = contigs.Select(c => new Seq(c.Key, c.Value, SeqType.A)).ToList();
@@ -93,10 +94,11 @@ namespace herad
             return (aSeqs, allOverlaps);
         }
 
-        private static void MainLogic(List<Seq> aSeqs, Dictionary<string, List<Overlap>> allOverlaps)
+        private static void MainLogic(List<Seq> aSeqs, Dictionary<int, List<Overlap>> allOverlaps)
         {
 
-            var firstContig = aSeqs.First().Name.Substring(1);
+            var firstContig = int.Parse(aSeqs.First().Name.Substring(1 + "ctg".Length));
+
             var firstContigOverlaps = allOverlaps[firstContig];
 
             List<Path> pathsUsingOverlapScore   = GetPathsUsingStrategy(allOverlaps, firstContigOverlaps, Strategies.GetBestOverlapByOverlapScore);
@@ -121,7 +123,7 @@ namespace herad
         }
 
         private static List<Path> GetPathsUsingStrategy(
-            Dictionary<string, List<Overlap>> overlapsDict,
+            Dictionary<int, List<Overlap>> overlapsDict,
             List<Overlap> firstContigOverlaps,
             Func<Path, List<Overlap>, Overlap> getBest
             )
@@ -135,7 +137,7 @@ namespace herad
                 Path nexty = queueOfInterestingOverlaps.Dequeue();
                 var lastOver = nexty.Overlaps.Last();
 
-                var neighbourOverlaps = overlapsDict[lastOver.TargetSeqName];
+                var neighbourOverlaps = overlapsDict[lastOver.TargetSeqCodename];
                 // This time by overlap
                 // Get first overlap which isn't already in NEXT
                 // Order by overlap score and tie break on sequence identity
@@ -156,7 +158,7 @@ namespace herad
                 nexty.AddOverlap(best);
 
                 // If best option is to connect the read to contig
-                if (best.TargetSeqName.Contains("ctg")) // TODO: Find better way to ensure the target is contig
+                if (best.TargetSeqCodename % 10 != 0) // TODO: Find better way to ensure the target is contig
                 {
                     finalized.Add(nexty);
                     continue; // This path is complete and don't process it in the queue anymore
@@ -168,15 +170,15 @@ namespace herad
             return finalized;
         }
 
-        private static Dictionary<string, List<Overlap>> CreateLookupDictOfOverlapsByName(IEnumerable<Overlap> readToReadOverlaps)
+        private static Dictionary<int, List<Overlap>> CreateLookupDictOfOverlapsByName(IEnumerable<Overlap> readToReadOverlaps)
         {
             // Create a set of (left sequence name, overlap)
-            IEnumerable<(string, Overlap)> readsReadsOverlapsPairs = 
-                readToReadOverlaps.Select(r => (r.QuerySeqName, r))
-                .Concat(readToReadOverlaps.Select(r => (r.TargetSeqName, r.GetFlipped())));
+            IEnumerable<(int, Overlap)> readsReadsOverlapsPairs = 
+                readToReadOverlaps.Select(r => (r.QuerySeqCodename, r))
+                .Concat(readToReadOverlaps.Select(r => (r.TargetSeqCodename, r.GetFlipped())));
 
             // Create a lookup table for looking up using entering nodes
-            Dictionary<string, List<Overlap>> readsReadsOverlapsDict = readsReadsOverlapsPairs.Select(s => s.Item1).Distinct().ToDictionary(s => s, s => new List<Overlap>());
+            Dictionary<int, List<Overlap>> readsReadsOverlapsDict = readsReadsOverlapsPairs.Select(s => s.Item1).Distinct().ToDictionary(s => s, s => new List<Overlap>());
             readsReadsOverlapsPairs.ToList().ForEach(p => readsReadsOverlapsDict[p.Item1].Add(p.Item2));
 
             return readsReadsOverlapsDict;

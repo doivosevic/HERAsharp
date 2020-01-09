@@ -9,13 +9,16 @@ namespace herad
     /// <summary>
     /// Overlap path containing list of overlaps and backtracks
     /// </summary>
+    [DebuggerDisplay("P {Length}")]
     public class Path
     {
         public IEnumerable<Overlap> Overlaps => _overlaps;
 
         //public IEnumerable<HashSet<Overlap>> LastSkips => _lastSkips;
 
-        public HashSet<string> ToSkip { get; }
+        public int Length => this._overlaps.Count;
+
+        public HashSet<int> ToSkip { get; }
 
         private List<Overlap> _overlaps;
         //private List<HashSet<Overlap>> _lastSkips;
@@ -24,7 +27,7 @@ namespace herad
         {
             this._overlaps = new List<Overlap> { initialOverlap };
             //this._lastSkips = new List<HashSet<Overlap>> { new HashSet<Overlap>() };
-            this.ToSkip = new HashSet<string> { initialOverlap.QuerySeqName, initialOverlap.TargetSeqName };
+            this.ToSkip = new HashSet<int> { initialOverlap.QuerySeqCodename, initialOverlap.TargetSeqCodename };
         }
 
         public int GetPathLength()
@@ -96,7 +99,7 @@ namespace herad
         {
             //Debug.Assert(this.LastSkips.Last().Contains(o) == false && this._overlaps.Contains(o) == false);
             this._overlaps.Add(o);
-            this.ToSkip.Add(o.TargetSeqName);
+            this.ToSkip.Add(o.TargetSeqCodename);
             //this._lastSkips.Add(new HashSet<Overlap> { });
         }
     }
