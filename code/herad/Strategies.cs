@@ -8,15 +8,14 @@ namespace herad
     public static class Strategies
     {
 
+        public static Func<Path, List<Overlap>, Overlap> GetBestOverlapByOverlapScore =
+                    (next, neighbours) =>
+                            neighbours.OrderByDescending(n => next.ToSkip[n.TargetSeqCodename] ? 0 : n.OverlapScore).First();
 
         public static Func<Path, List<Overlap>, Overlap> GetBestOverlapByExtensionScore =
                     // TODO: Paziti da je uvijek ulazna strana query a nikad target da ne bi bilo zabune
                     (next, neighbours) =>
-                            neighbours.OrderByDescending(n => n.ExtensionScore1 * 1000 + n.Identity).FirstOrDefault(o => !next.ToSkip.Contains(o.TargetSeqCodename));
-
-        public static Func<Path, List<Overlap>, Overlap> GetBestOverlapByOverlapScore =
-                    (next, neighbours) =>
-                            neighbours.OrderByDescending(n => n.OverlapScore * 1000 + n.Identity).FirstOrDefault(o => !next.ToSkip.Contains(o.TargetSeqCodename));
+                            neighbours.OrderByDescending(n => next.ToSkip[n.TargetSeqCodename] ? 0 : n.ExtensionScore1).First();
 
         public static Func<Path, List<Overlap>, Overlap> GetBestOverlapByMonteCarlo =
                     (next, neighbours) => {

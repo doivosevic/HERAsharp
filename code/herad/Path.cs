@@ -18,7 +18,7 @@ namespace herad
 
         public int Length => this._overlaps.Count;
 
-        public HashSet<int> ToSkip { get; }
+        public bool[] ToSkip;
 
         private List<Overlap> _overlaps;
         //private List<HashSet<Overlap>> _lastSkips;
@@ -27,7 +27,10 @@ namespace herad
         {
             this._overlaps = new List<Overlap> { initialOverlap };
             //this._lastSkips = new List<HashSet<Overlap>> { new HashSet<Overlap>() };
-            this.ToSkip = new HashSet<int> { initialOverlap.QuerySeqCodename, initialOverlap.TargetSeqCodename };
+            this.ToSkip = new bool[10 * 1000];
+            //new HashSet<int> { initialOverlap.QuerySeqCodename, initialOverlap.TargetSeqCodename };
+            this.ToSkip[initialOverlap.QuerySeqCodename] = true;
+            this.ToSkip[initialOverlap.TargetSeqCodename] = true;
         }
 
         public int GetPathLength()
@@ -99,7 +102,7 @@ namespace herad
         {
             //Debug.Assert(this.LastSkips.Last().Contains(o) == false && this._overlaps.Contains(o) == false);
             this._overlaps.Add(o);
-            this.ToSkip.Add(o.TargetSeqCodename);
+            this.ToSkip[o.TargetSeqCodename] = true;
             //this._lastSkips.Add(new HashSet<Overlap> { });
         }
     }

@@ -8,46 +8,46 @@ namespace herad
     public class Overlap
     {
         // 1	string	Query sequence name
-        private string QuerySeqName { get; }
+        private string QuerySeqName;
 
-        public int QuerySeqCodename { get; }
+        public int QuerySeqCodename;
 
         // 2	int	Query sequence length
-        public int QuerySeqLen { get; }
+        public int QuerySeqLen;
 
         // 3	int	Query start coordinate (0-based)
-        public int QueryStartCoord { get; }
+        public int QueryStartCoord;
 
         // 4	int	Query end coordinate (0-based)
-        public int QueryEndCoord { get; }
+        public int QueryEndCoord;
 
         // 5	char	‘+’ if query/target on the same strand; ‘-’ if opposite
-        public bool SameStrand { get; }
+        public bool SameStrand;
 
         // 6	string	Target sequence name
-        private string TargetSeqName { get; }
+        private string TargetSeqName;
 
-        public int TargetSeqCodename { get; }
+        public int TargetSeqCodename;
 
         // 7	int	Target sequence length
-        public int TargetSeqLen { get; }
+        public int TargetSeqLen;
 
         // 8	int	Target start coordinate on the original strand
-        public int TargetStartCoord { get; }
+        public int TargetStartCoord;
 
         // 9	int	Target end coordinate on the original strand
-        public int TargetEndCoord { get; }
+        public int TargetEndCoord;
 
         // 10	int	Number of matching bases in the mapping
-        public int NumMatching { get; }
+        public int NumMatching;
 
         // 11	int	Number bases, including gaps, in the mapping
-        public int NumAll { get; }
+        public int NumAll;
 
         // 12	int	Mapping quality (0-255 with 255 for missing)
-        public int Quality { get; }
+        public int Quality;
 
-        public double Identity => 1.0 * this.NumMatching / this.NumAll;
+        public double Identity;
 
         public Overlap(string n, int ql, int qs, int qe, bool ss, string tn,
             int tl, int ts, int te, int nm, int na, int q, string tp, string cm, string s1, string dv)
@@ -59,6 +59,8 @@ namespace herad
             this.QuerySeqCodename = GetCodename(this.QuerySeqName);
             this.TargetSeqCodename = GetCodename(this.TargetSeqName);
 
+            this.Identity = 1.0 * this.NumMatching / this.NumAll;
+
             this.OverlapScore = (this.QueryEndCoord - this.QueryStartCoord + this.TargetEndCoord - this.TargetStartCoord) * 1.0 / 2.0;
             this.ExtensionScore1 = this.OverlapScore + this.QueryStartCoord / 2.0 + (this.QuerySeqLen - this.QueryEndCoord + this.TargetStartCoord) / 2.0;
             this.ExtensionScore2 = this.OverlapScore + (this.TargetSeqLen - this.TargetEndCoord) / 2.0 + (this.QuerySeqLen - this.QueryEndCoord + this.TargetStartCoord) / 2.0;
@@ -67,7 +69,7 @@ namespace herad
         private static int GetCodename(string name)
         {
             if (name.StartsWith("ctg")) return int.Parse(name.Substring("ctg".Length));
-            else return int.Parse(name.Substring("read".Length)) * 10;
+            else return int.Parse(name.Substring("read".Length)) + 10;
         }
 
 
@@ -82,10 +84,10 @@ namespace herad
         /// 
         //public double ExtensionScore(bool es1) => this.OverlapScore + (es1 ? this.QueryStartCoord : this.TargetSeqLen - this.TargetEndCoord) / 2.0 + (this.QuerySeqLen - this.QueryEndCoord + this.TargetStartCoord) / 2.0;
 
-        public double ExtensionScore1 { get; }
-        public double ExtensionScore2 { get; }
+        public double ExtensionScore1;
+        public double ExtensionScore2;
 
-        public double OverlapScore { get; }
+        public double OverlapScore;
 
         public Overlap GetFlipped()
         {

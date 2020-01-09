@@ -70,21 +70,6 @@ namespace herad
             var readToReadPaf = GetDataFile("read_to_read").Select(s => s.Split('\t')).ToList();
             IEnumerable<Overlap> readToReadOverlaps = PafToOverlap(readToReadPaf);
 
-            readToContigOverlaps.ToList();
-
-            var pafNames = paf.Select(p => (p[5] + p[0], p)).OrderBy(s => s.Item1).ToList();
-
-            var refss = refs.First().Value;
-            var readss = reads.Values;
-            var contigss = contigs.Values;
-
-            var ccc = readss.Select(i => refss.Contains(i));
-
-            var count = ccc.Count(i => i == true);
-
-            var c2 = contigss.Select(c123 => refss.Contains(c123));
-
-
             var contigReadsOverlapsDict = CreateLookupDictOfOverlapsByName(readToContigOverlaps);
             var readsReadsOverlapsDict = CreateLookupDictOfOverlapsByName(readToReadOverlaps);
 
@@ -130,6 +115,8 @@ namespace herad
         {
             var queueOfInterestingOverlaps = new Queue<Path>(firstContigOverlaps.Select(q => new Path(q)));
 
+            Debug.Assert(queueOfInterestingOverlaps.First().ToSkip.Count() > overlapsDict.Max(o => o.Value.Count));
+
             List<Path> finalized = new List<Path>();
 
             while (queueOfInterestingOverlaps.Any())
@@ -158,7 +145,7 @@ namespace herad
                 nexty.AddOverlap(best);
 
                 // If best option is to connect the read to contig
-                if (best.TargetSeqCodename % 10 != 0) // TODO: Find better way to ensure the target is contig
+                if (best.TargetSeqCodename < 10) // TODO: Find better way to ensure the target is contig
                 {
                     finalized.Add(nexty);
                     continue; // This path is complete and don't process it in the queue anymore
