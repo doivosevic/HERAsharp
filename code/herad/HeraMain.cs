@@ -32,23 +32,43 @@ namespace herad
             sb.Append(firstSeq.Content.Substring(0, firstOverlap.QueryEndCoord));
             pathIter = firstOverlap.QueryEndCoord;
 
-            for (int i = 0; i < completePath.Count - 1; i++)
+            for (int i = 0; i < completePath.Count; i++)
             {
                 var ol = completePath[i];
-                var ol2 = completePath[i + 1];
 
                 iter += ol.QueryStartCoord - ol.TargetStartCoord;
                 if (pathIter < iter + ol.TargetEndCoord)
                 {
                     var rightSeq = Path.AllSeqs[">" + ol.TargetSeqName];
-                    sb.Append(rightSeq.Content.Substring(pathIter - iter, (iter + ol.TargetEndCoord - (pathIter - iter))));
+                    int start = pathIter - iter;
+
+                    if (start < 0)
+                    {
+                        var leftSeq = Path.AllSeqs[">" + ol.QuerySeqName];
+
+                        var leftOfOverlap = -start + (ol.TargetStartCoord);
+                        var queryStart = ol.QueryStartCoord - leftOfOverlap;
+
+                        sb.Append(leftSeq.Content.Substring(queryStart, -start));
+                        pathIter += -start;
+                        start = 0;
+                    }
+
+                    int len = (ol.TargetEndCoord - start);
+                    sb.Append(rightSeq.Content.Substring(start, len));
+
+                    if (i == completePath.Count - 1)
+                    {
+                        sb.Append(rightSeq.Content.Substring(start + len));
+                    }
+
                     pathIter = iter + ol.TargetEndCoord;
                 }
             }
 
             string final = sb.ToString();
 
-            File.WriteAllText("complete.txt", final);
+            File.WriteAllText("complete.fasta", ">ditodito" + Environment.NewLine + final);
         }
 
         private static List<(int, int, List<Path>, Path)> GetConsensusSequences(List<Seq> aSeqs, Dictionary<int, List<Overlap>> allOverlaps)
@@ -70,9 +90,9 @@ namespace herad
 
                 foreach (var keyCtg in byEndContig)
                 {
-                    var consensus = GetConsensusSequence(keyCtg.Item2);
+                    var consensus = GetConsensusSequenceAndItsGroup(keyCtg.Item2);
 
-                    listOfConsensuses.Add((ctgName, keyCtg.Key, keyCtg.Item2, consensus));
+                    listOfConsensuses.Add((ctgName, keyCtg.Key, consensus.Item2, consensus.Item1));
                 }
             }
 
@@ -100,11 +120,11 @@ namespace herad
                 ordered.Add(next.Item2);
             }
 
-            List<(int, int, List<Path>, Path)> orderedConnections = ordered.SkipLast(1).Select(o => listOfConsensuses.First(c => c.Item1 == o)).ToList();
+            List<(int, int, List<Path>, Path)> orderedPairs = ordered.SkipLast(1).Zip(ordered.Skip(1)).Select(p => listOfConsensuses.First(c => c.Item1 == p.First && c.Item2 == p.Second)).ToList();
 
             List<Overlap> completePath = new List<Overlap>();
 
-            foreach (var c in orderedConnections)
+            foreach (var c in orderedPairs)
             {
                 completePath.AddRange(c.Item4.Overlaps);
             }
@@ -146,7 +166,7 @@ namespace herad
             return graph;
         }
 
-        private static Path GetConsensusSequence(List<Path> pathsUsingOverlapScore)
+        private static (Path, List<Path>) GetConsensusSequenceAndItsGroup(List<Path> pathsUsingOverlapScore)
         {
             var byLen = pathsUsingOverlapScore.Select(o => (o.GetPathLength(), o)).OrderByDescending(p => p.Item1).ToList();
 
@@ -163,10 +183,14 @@ namespace herad
 
             var by1000 = byLen.GroupBy(lp => lp.Item1 / (1 * 1000 * 1000)).Select(g => (g.Count(), g.ToList())).ToList();
 
-            var bestGroup = by1000.OrderBy(g => g.Item1).First();
+            (int, List<(int, Path o)>) bestGroup = by1000.OrderByDescending(g => g.Item1).First();
+
+            int indexOfBest = by1000.IndexOf(bestGroup);
+
+
             var inBestByScore = bestGroup.Item2.Select(p => (p.o.Overlaps.Sum(oo => oo.OverlapScore) / p.o.Overlaps.Count(), p.o)).OrderByDescending(p => p.Item1).ToList();
             var consensusSequence = inBestByScore.First().o;
-            return consensusSequence;
+            return (consensusSequence, bestGroup.Item2.Select(g => g.o).ToList());
         }
 
         private static List<Path> GetPathsUsingStrategy(
