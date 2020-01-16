@@ -8,7 +8,7 @@ namespace herad
     public class Overlap
     {
         // 1	string	Query sequence name
-        private string QuerySeqName;
+        public string QuerySeqName;
 
         public int QuerySeqCodename;
 
@@ -25,7 +25,7 @@ namespace herad
         public bool SameStrand;
 
         // 6	string	Target sequence name
-        private string TargetSeqName;
+        public string TargetSeqName;
 
         public int TargetSeqCodename;
 

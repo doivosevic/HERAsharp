@@ -21,6 +21,8 @@ namespace herad
         public bool[] ToSkip;
 
         private List<Overlap> _overlaps;
+        internal static Dictionary<string, Seq> AllSeqs;
+
         //private List<HashSet<Overlap>> _lastSkips;
 
         public Path(Overlap initialOverlap)
@@ -82,6 +84,33 @@ namespace herad
             }
 
             return len;
+        }
+
+        public string AssembleSequence()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            var firstOverlap = this._overlaps.First();
+            var firstRead = AllSeqs[firstOverlap.TargetSeqName];
+            sb.Append(firstRead.Content.Substring(firstOverlap.QueryEndCoord));
+
+            for (int i = 0; i < this.Length - 1; i++)
+            {
+                var overlap = this._overlaps[i];
+                var leftPath = AllSeqs[overlap.QuerySeqName];
+                var rightPath = AllSeqs[overlap.TargetSeqName];
+
+                var nextOverlap = this._overlaps[i + 1];
+                var nextLeft = AllSeqs[nextOverlap.QuerySeqName];
+                var nextRight = AllSeqs[nextOverlap.TargetSeqName];
+
+                Debug.Assert(rightPath == nextLeft);
+
+                var newAddendum = nextLeft.Content.Substring(overlap.TargetEndCoord, nextOverlap.TargetEndCoord - overlap.TargetEndCoord);
+                sb.Append(newAddendum);
+            }
+
+            return sb.ToString();
         }
 
         public Overlap RemoveLastOverlapAndAddToSkipped()
