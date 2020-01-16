@@ -82,11 +82,12 @@ namespace herad
         private static List<Overlap> GetFinalPathOverlaps(List<(int, int, List<Path>, Path)> listOfConsensuses, List<(int, int)> graph)
         {
             int firstCtg = graph.First().Item1;
+            int realFirst = firstCtg;
 
             while (true)
             {
                 var newFirst = graph.FirstOrDefault(n => n.Item2 == firstCtg);
-                if (newFirst == default) break;
+                if (newFirst == default || realFirst == newFirst.Item1) break;
                 firstCtg = newFirst.Item1;
             }
 
@@ -95,11 +96,11 @@ namespace herad
             while (true)
             {
                 var next = graph.FirstOrDefault(n => n.Item1 == ordered.Last());
-                if (next == default) break;
+                if (next == default || next.Item2 == firstCtg) break;
                 ordered.Add(next.Item2);
             }
 
-            var orderedConnections = ordered.SkipLast(1).Select(o => listOfConsensuses.First(c => c.Item1 == o)).ToList();
+            List<(int, int, List<Path>, Path)> orderedConnections = ordered.SkipLast(1).Select(o => listOfConsensuses.First(c => c.Item1 == o)).ToList();
 
             List<Overlap> completePath = new List<Overlap>();
 
@@ -201,8 +202,11 @@ namespace herad
                     }
 
                     nexty.RemoveLastOverlapAndAddToSkipped();
+                    queueOfInterestingOverlaps.Enqueue(nexty);
+                    continue;
                 }
 
+                nexty.ToSkip[best.TargetSeqCodename] = true;
                 nexty.AddOverlap(best);
 
                 // If best option is to connect the read to contig

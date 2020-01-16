@@ -9,8 +9,12 @@ namespace herad
     {
 
         public static Func<Path, List<Overlap>, Overlap> GetBestOverlapByOverlapScore =
-                    (path, neighbours) =>
-                            neighbours.OrderByDescending(n => (path.ToSkip[n.TargetSeqCodename] || path.Overlaps.Last().TargetStartCoord > n.QueryStartCoord) ? 0 : n.OverlapScore).First();
+                    (path, neighbours) => {
+                        return neighbours.OrderByDescending(n =>
+                        {
+                            return (path.ToSkip[n.TargetSeqCodename] || path.Overlaps.Last().TargetStartCoord > n.QueryStartCoord) ? 0 : n.OverlapScore;
+                        }).FirstOrDefault(n => path.ToSkip[n.TargetSeqCodename] == false);
+                    };
 
         public static Func<Path, List<Overlap>, Overlap> GetBestOverlapByExtensionScore =
                     // TODO: Paziti da je uvijek ulazna strana query a nikad target da ne bi bilo zabune
