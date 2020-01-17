@@ -32,6 +32,8 @@ namespace herad
             sb.Append(firstSeq.Content.Substring(0, firstOverlap.QueryEndCoord));
             pathIter = firstOverlap.QueryEndCoord;
 
+            bool firstStrand = true;
+
             for (int i = 0; i < completePath.Count; i++)
             {
                 var ol = completePath[i];
@@ -50,12 +52,14 @@ namespace herad
                         var queryStart = ol.QueryStartCoord - leftOfOverlap;
 
                         sb.Append(leftSeq.Content.Substring(queryStart, -start));
-                        pathIter += -start;
+                        //pathIter += -start;
                         start = 0;
                     }
 
+                    if (ol.SameStrand == false) firstStrand = !firstStrand;
+
                     int len = (ol.TargetEndCoord - start);
-                    sb.Append(rightSeq.Content.Substring(start, len));
+                    sb.Append(Flip(firstStrand, rightSeq.Content.Substring(start, len)));
 
                     if (i == completePath.Count - 1)
                     {
@@ -69,6 +73,23 @@ namespace herad
             string final = sb.ToString();
 
             File.WriteAllText("complete.fasta", ">ditodito" + Environment.NewLine + final);
+        }
+
+        private static string Flip(bool firstStrand, string v)
+        {
+            if (firstStrand) return v;
+            else return string.Join(string.Empty, v.Select(c =>
+            {
+                switch (c)
+                {
+                    case 'G': return 'C';
+                    case 'C': return 'G';
+                    case 'T': return 'A';
+                    case 'A': return 'T';
+                    default:
+                        throw new NullReferenceException();
+                }
+            }));
         }
 
         private static List<(int, int, List<Path>, Path)> GetConsensusSequences(List<Seq> aSeqs, Dictionary<int, List<Overlap>> allOverlaps)
