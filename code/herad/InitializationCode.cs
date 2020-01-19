@@ -8,15 +8,17 @@ namespace herad
 {
     public static class InitializationCode
     {
-        public static (List<Seq> aSeqs, Dictionary<int, List<Overlap>> allOverlaps) SetupVariables()
+        public static (List<Seq> aSeqs, Dictionary<int, List<Overlap>> allOverlaps) SetupVariables(string readsPath = null, string contigsPath = null, string readToReadPath = null, string readToContigPath = null)
         {
-            // The whole reference
-            var refs = ToDict(GetDataFile("ref"));
+            string[] readToContig = GetDataFile("read_to_contig");
+            string[] readToRead = GetDataFile("read_to_read");
+            string[] readss = GetDataFile("reads_1").Concat(GetDataFile("reads_2")).Concat(GetDataFile("reads_3")).ToArray();
+            string[] contigss = GetDataFile("contig");
 
-            var paf = GetDataFile("read_to_contig").Select(s => s.Split('\t')).ToList();
+            var paf = readToContig.Select(s => s.Split('\t')).ToList();
             IEnumerable<Overlap> readToContigOverlaps = PafToOverlap(paf);
 
-            var readToReadPaf = GetDataFile("read_to_read").Select(s => s.Split('\t')).ToList();
+            var readToReadPaf = readToRead.Select(s => s.Split('\t')).ToList();
             IEnumerable<Overlap> readToReadOverlaps = PafToOverlap(readToReadPaf);
 
             var contigReadsOverlapsDict = CreateLookupDictOfOverlapsByName(readToContigOverlaps);
@@ -26,10 +28,10 @@ namespace herad
             contigReadsOverlapsDict.ToList().ForEach(p => { if (allOverlaps.ContainsKey(p.Key)) { allOverlaps[p.Key].AddRange(p.Value); } else { allOverlaps[p.Key] = p.Value.ToList(); } });
 
 
-            var reads = ToDict(GetDataFile("reads_1").Concat(GetDataFile("reads_2")).Concat(GetDataFile("reads_3")).ToArray());
+            var reads = ToDict(readss);
             List<Seq> rSeqs = reads.Select(r => new Seq(r.Key, r.Value, SeqType.R)).ToList();
 
-            var contigs = ToDict(GetDataFile("contig"));
+            var contigs = ToDict(contigss);
             List<Seq> aSeqs = contigs.Select(c => new Seq(c.Key, c.Value, SeqType.A)).ToList();
 
             var allSeqs = rSeqs.Concat(aSeqs).ToDictionary(s => s.Name, s => s);
@@ -60,12 +62,12 @@ namespace herad
                 IP(p[7]), IP(p[8]), IP(p[9]), IP(p[10]), IP(p[11]), p[12], p[13], p[14], p[15]));
         }
 
-        private static string[] GetDataFile(string what)
+        private static string[] GetDataFile(string pattern)
         {
             var dataFolder = Directory.GetDirectories(Directory.GetCurrentDirectory()).First();
             var dataFiles = Directory.GetFiles(dataFolder);
 
-            var contigs = File.ReadAllLines(dataFiles.FirstOrDefault(f => f.Contains(what)));
+            var contigs = File.ReadAllLines(dataFiles.FirstOrDefault(f => f.Contains(pattern)));
             return contigs;
         }
 

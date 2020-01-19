@@ -12,22 +12,26 @@ namespace herad
                     (path, neighbours) => {
                         return neighbours.OrderByDescending(n =>
                         {
-                            return (path.ToSkip[n.TargetSeqCodename] || path.Overlaps.Last().TargetStartCoord > n.QueryStartCoord) ? 0 : n.OverlapScore;
+                            return (path.ToSkip[n.TargetSeqCodename] || path.Overlaps.Last().TargetStartCoord > n.QueryStartCoord) ? default : n.OverlapScore;
                         }).FirstOrDefault(n => path.ToSkip[n.TargetSeqCodename] == false);
                     };
 
         public static Func<Path, List<Overlap>, Overlap> GetBestOverlapByExtensionScore =
-                    // TODO: Paziti da je uvijek ulazna strana query a nikad target da ne bi bilo zabune
-                    (path, neighbours) =>
-                            neighbours.OrderByDescending(n => path.ToSkip[n.TargetSeqCodename] ? 0 : n.ExtensionScore1).First();
+                    (path, neighbours) => {
+                        return neighbours.OrderByDescending(n =>
+                        {
+                            return path.ToSkip[n.TargetSeqCodename] || path.Overlaps.Last().TargetStartCoord > n.QueryStartCoord ? default : n.ExtensionScore1;
+                        }).FirstOrDefault(n => path.ToSkip[n.TargetSeqCodename] == false);
+                    };
 
         public static Func<Path, List<Overlap>, Overlap> GetBestOverlapByMonteCarlo =
-                    (next, neighbours) => {
+                    (next, neighbours) => { 
                         var r = new Random();
                         double sum = neighbours.Sum(n => n.ExtensionScore1);
                         double selection = sum * r.NextDouble();
 
                         double soFar = 0;
+                        return default;
                         Overlap selected = neighbours.SkipWhile(n => (soFar = n.ExtensionScore1) < selection).First();
 
                         return selected;

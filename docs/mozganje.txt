@@ -1,0 +1,18 @@
+trenutno je problem kod biranja koji od složenih puteva želimo odabrati.
+Pij je put od contiga i do contiga j.
+Naivan način bi bio odabrati put s najvećim overlap scoreom
+
+
+
+SMS - single molecule sequencing
+
+PacBio & Oxford Nanopore - 2 firme koje rade sekvencioniranje
+https://www.ncbi.nlm.nih.gov/genbank/bionanomaps/
+
+tandemly. Adverb. (not comparable) (genetics) End to end a tandemly repeated DNA sequence.
+tandemly repeated sequences - A chromosomal duplication in which the duplicated segments are adjacent (i.e. in tandem) whether or not they are inverted.
+Almost all of the regions were found to contain tandemly repetitive sequences with multiple peaks in their path length distribution plot. These results indicated that our assembly method for tandem repeats is valid.
+
+
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2874646/?report=classic
+

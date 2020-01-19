@@ -19,19 +19,27 @@ namespace herad
 
         private static void MainLogic(List<Seq> aSeqs, Dictionary<int, List<Overlap>> allOverlaps)
         {
+            // GENERATION OF CONSENSUS SEQUENCES
             List<(int, int, List<Path>, Path)> listOfConsensuses = GetConsensusSequences(aSeqs, allOverlaps);
-            List<(int, int)> graph = GetConnectionGraph(listOfConsensuses);
-            List<Overlap> completePath = GetFinalPathOverlaps(listOfConsensuses, graph);
 
+            // CONSTRUCTION OF OVERLAP GRAPH
+            List<(int, int)> graph = GetConnectionGraph(listOfConsensuses);
+
+            // FINAL SEQUENCE ASSEMBLY
+            List<Overlap> completePath = GetFinalPathOverlaps(listOfConsensuses, graph);
+            string final = BuildSequenceFromOverlaps(completePath);
+
+            File.WriteAllText("complete.fasta", ">finalsequence" + Environment.NewLine + final);
+        }
+
+        private static string BuildSequenceFromOverlaps(List<Overlap> completePath)
+        {
             StringBuilder sb = new StringBuilder();
             int iter = 0;
-            int pathIter = 0;
-
             var firstOverlap = completePath.First();
             Seq firstSeq = Path.AllSeqs[">" + firstOverlap.QuerySeqName];
             sb.Append(firstSeq.Content.Substring(0, firstOverlap.QueryEndCoord));
-            pathIter = firstOverlap.QueryEndCoord;
-
+            int pathIter = firstOverlap.QueryEndCoord;
             bool firstStrand = true;
 
             for (int i = 0; i < completePath.Count; i++)
@@ -59,7 +67,7 @@ namespace herad
                     if (ol.SameStrand == false) firstStrand = !firstStrand;
 
                     int len = (ol.TargetEndCoord - start);
-                    sb.Append(Flip(firstStrand, rightSeq.Content.Substring(start, len)));
+                    sb.Append(Utilities.Flip(firstStrand, rightSeq.Content.Substring(start, len)));
 
                     if (i == completePath.Count - 1)
                     {
@@ -71,25 +79,7 @@ namespace herad
             }
 
             string final = sb.ToString();
-
-            File.WriteAllText("complete.fasta", ">ditodito" + Environment.NewLine + final);
-        }
-
-        private static string Flip(bool firstStrand, string v)
-        {
-            if (firstStrand) return v;
-            else return string.Join(string.Empty, v.Select(c =>
-            {
-                switch (c)
-                {
-                    case 'G': return 'C';
-                    case 'C': return 'G';
-                    case 'T': return 'A';
-                    case 'A': return 'T';
-                    default:
-                        throw new NullReferenceException();
-                }
-            }));
+            return final;
         }
 
         private static List<(int, int, List<Path>, Path)> GetConsensusSequences(List<Seq> aSeqs, Dictionary<int, List<Overlap>> allOverlaps)
@@ -102,10 +92,16 @@ namespace herad
 
                 var firstContigOverlaps = allOverlaps[ctgName];
 
+                // FINDING PATHS BETWEEN ANCHORING NODES IN HERA
+
+                // APPROACH I
                 List<Path> pathsUsingOverlapScore = GetPathsUsingStrategy(allOverlaps, firstContigOverlaps, Strategies.GetBestOverlapByOverlapScore);
 
-                //List<Path> pathsUsingExtensionScore = GetPathsUsingStrategy(allOverlaps, firstContigOverlaps, Strategies.GetBestOverlapByExtensionScore);
-                //List<Path> pathsUsingMonteCarlo = GetPathsUsingStrategy(allOverlaps, firstContigOverlaps, Strategies.GetBestOverlapByMonteCarlo);
+                // APPROACH II
+                List<Path> pathsUsingExtensionScore = GetPathsUsingStrategy(allOverlaps, firstContigOverlaps, Strategies.GetBestOverlapByExtensionScore);
+
+                // APPROACH III
+                List<Path> pathsUsingMonteCarlo = GetPathsUsingStrategy(allOverlaps, firstContigOverlaps, Strategies.GetBestOverlapByMonteCarlo);
 
                 List<(int Key, List<Path>)> byEndContig = pathsUsingOverlapScore.GroupBy(p => p.Overlaps.Last().TargetSeqCodename).Select(g => (g.Key, g.ToList())).Where(g => g.Key != ctgName).ToList();
 
