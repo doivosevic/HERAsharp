@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace herad
 {
@@ -86,7 +87,10 @@ namespace herad
         {
             List<(int, int, List<Path>, Path)> listOfConsensuses = new List<(int, int, List<Path>, Path)>();
 
-            foreach (var ctg in aSeqs)
+            var options = new ParallelOptions();
+            options.MaxDegreeOfParallelism = 8;
+
+            Parallel.ForEach(aSeqs, options, ctg =>
             {
                 var ctgName = int.Parse(ctg.Name.Substring(1 + "ctg".Length));
 
@@ -111,7 +115,7 @@ namespace herad
 
                     listOfConsensuses.Add((ctgName, keyCtg.Key, consensus.Item2, consensus.Item1));
                 }
-            }
+            });
 
             return listOfConsensuses;
         }
