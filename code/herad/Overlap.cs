@@ -68,7 +68,7 @@ namespace herad
 
         private static int GetCodename(string name)
         {
-            if (name.StartsWith("ctg")) return int.Parse(name.Substring("ctg".Length));
+            if (name.StartsWith("ctg", StringComparison.CurrentCultureIgnoreCase)) return int.Parse(name.Substring("ctg".Length));
             else return int.Parse(name.Substring("read".Length)) + 10;
         }
 

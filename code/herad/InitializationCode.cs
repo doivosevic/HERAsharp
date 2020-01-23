@@ -12,7 +12,7 @@ namespace herad
         {
             string[] readToContig = GetDataFile("read_to_contig");
             string[] readToRead = GetDataFile("read_to_read");
-            string[] readss = GetDataFile("reads_1").Concat(GetDataFile("reads_2")).Concat(GetDataFile("reads_3")).ToArray();
+            string[] readss = GetDataFile("reads_1");
             string[] contigss = GetDataFile("contig");
 
             var paf = readToContig.Select(s => s.Split('\t')).ToList();
@@ -64,7 +64,7 @@ namespace herad
 
         private static string[] GetDataFile(string pattern)
         {
-            var dataFolder = Directory.GetDirectories(Directory.GetCurrentDirectory()).First();
+            var dataFolder = Directory.GetDirectories(Directory.GetCurrentDirectory()).First() + "\\ec_test2";
             var dataFiles = Directory.GetFiles(dataFolder);
 
             var contigs = File.ReadAllLines(dataFiles.FirstOrDefault(f => f.Contains(pattern)));

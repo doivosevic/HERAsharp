@@ -46,8 +46,14 @@ namespace herad
             for (int i = 0; i < completePath.Count; i++)
             {
                 var ol = completePath[i];
+                var dif = ol.QueryStartCoord - ol.TargetStartCoord;
 
-                iter += ol.QueryStartCoord - ol.TargetStartCoord;
+                if (dif < 0)
+                {
+                    ol = ol.GetFlipped();
+                }
+
+                iter += Math.Abs(dif);
                 if (pathIter < iter + ol.TargetEndCoord)
                 {
                     var rightSeq = Path.AllSeqs[">" + ol.TargetSeqName];
@@ -88,7 +94,7 @@ namespace herad
             List<(int, int, List<Path>, Path)> listOfConsensuses = new List<(int, int, List<Path>, Path)>();
 
             var options = new ParallelOptions();
-            options.MaxDegreeOfParallelism = 8;
+            options.MaxDegreeOfParallelism = 1;
 
             Parallel.ForEach(aSeqs, options, ctg =>
             {
@@ -102,10 +108,10 @@ namespace herad
                 List<Path> pathsUsingOverlapScore = GetPathsUsingStrategy(allOverlaps, firstContigOverlaps, Strategies.GetBestOverlapByOverlapScore);
 
                 // APPROACH II
-                List<Path> pathsUsingExtensionScore = GetPathsUsingStrategy(allOverlaps, firstContigOverlaps, Strategies.GetBestOverlapByExtensionScore);
+                //List<Path> pathsUsingExtensionScore = GetPathsUsingStrategy(allOverlaps, firstContigOverlaps, Strategies.GetBestOverlapByExtensionScore);
 
                 // APPROACH III
-                List<Path> pathsUsingMonteCarlo = GetPathsUsingStrategy(allOverlaps, firstContigOverlaps, Strategies.GetBestOverlapByMonteCarlo);
+                //List<Path> pathsUsingMonteCarlo = GetPathsUsingStrategy(allOverlaps, firstContigOverlaps, Strategies.GetBestOverlapByMonteCarlo);
 
                 List<(int Key, List<Path>)> byEndContig = pathsUsingOverlapScore.GroupBy(p => p.Overlaps.Last().TargetSeqCodename).Select(g => (g.Key, g.ToList())).Where(g => g.Key != ctgName).ToList();
 
@@ -191,7 +197,7 @@ namespace herad
         {
             var byLen = pathsUsingOverlapScore.Select(o => (o.GetPathLength(), o)).OrderByDescending(p => p.Item1).ToList();
 
-            var groupSizes = byLen.Count() / 100;
+            var groupSizes = byLen.Count() / 1;
             var groups = new List<List<Path>>();
             for (int i = 0; i < byLen.Count; i += groupSizes)
             {
@@ -264,7 +270,7 @@ namespace herad
                 queueOfInterestingOverlaps.Enqueue(nexty);
             }
 
-            return finalized.Where(p => p.Length > 10).ToList();
+            return finalized.Where(p => p.Length > 0).ToList();
         }
     }
 }

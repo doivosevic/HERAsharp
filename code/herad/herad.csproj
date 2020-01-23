@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,34 +12,56 @@
     <None Remove="data\ecoli_test_reads_2.fasta" />
     <None Remove="data\ecoli_test_reads_3.fasta" />
     <None Remove="data\ecoli_test_reference.fasta" />
+    <None Remove="data\ec_test2\ecoli_test_contigs.fasta" />
+    <None Remove="data\ec_test2\ecoli_test_reads_1.fasta" />
+    <None Remove="data\ec_test2\read_to_contig.paf" />
+    <None Remove="data\ec_test2\read_to_read.paf" />
+    <None Remove="data\ec_test2\scaraLog.txt" />
+    <None Remove="data\ec_test2\testreads.fastq" />
+    <None Remove="data\ec_test2\test_scara.fasta" />
     <None Remove="data\read_to_contig.paf" />
     <None Remove="data\read_to_read.paf" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="data\ecoli_test_contigs.fasta">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
     <Content Include="data\ecoli_test_reads_2.fasta">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
     <Content Include="data\ecoli_test_reads_3.fasta">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
     <Content Include="data\ecoli_test_reference.fasta">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Include="data\ec_test2\ecoli_test_contigs.fasta">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="data\read_to_contig.paf">
+    <Content Include="data\ec_test2\ecoli_test_reads_1.fasta">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="data\ec_test2\read_to_contig.paf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="data\ec_test2\read_to_read.paf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="data\ec_test2\scaraLog.txt" />
+    <Content Include="data\ec_test2\testreads.fastq" />
+    <Content Include="data\ec_test2\test_scara.fasta" />
+    <Content Include="data\read_to_contig.paf">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
     <Content Include="data\read_to_read.paf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="data\ecoli_test_reads_1.fasta">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
