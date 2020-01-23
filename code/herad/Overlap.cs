@@ -10,8 +10,6 @@ namespace herad
         // 1	string	Query sequence name
         public string QuerySeqName;
 
-        public int QuerySeqCodename;
-
         // 2	int	Query sequence length
         public int QuerySeqLen;
 
@@ -26,8 +24,6 @@ namespace herad
 
         // 6	string	Target sequence name
         public string TargetSeqName;
-
-        public int TargetSeqCodename;
 
         // 7	int	Target sequence length
         public int TargetSeqLen;
@@ -55,9 +51,6 @@ namespace herad
             this.QuerySeqName = n; this.QuerySeqLen = ql; this.QueryStartCoord = qs; this.QueryEndCoord = qe;
             this.SameStrand = ss; this.TargetSeqName = tn; this.TargetSeqLen = tl; this.TargetStartCoord = ts;
             this.TargetEndCoord = te; this.NumMatching = nm; this.NumAll = na; this.Quality = q;
-
-            this.QuerySeqCodename = GetCodename(this.QuerySeqName);
-            this.TargetSeqCodename = GetCodename(this.TargetSeqName);
 
             this.Identity = 1.0 * this.NumMatching / this.NumAll;
 

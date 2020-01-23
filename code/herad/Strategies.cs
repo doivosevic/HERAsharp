@@ -8,23 +8,23 @@ namespace herad
     public static class Strategies
     {
 
-        public static Func<Path, List<Overlap>, Overlap> GetBestOverlapByOverlapScore =
+        public static Func<OverlapPath, List<Overlap>, Overlap> GetBestOverlapByOverlapScore =
                     (path, neighbours) => {
                         return neighbours.OrderByDescending(n =>
                         {
-                            return (path.ToSkip[n.TargetSeqCodename] || path.Overlaps.Last().TargetStartCoord > n.QueryStartCoord) ? default : n.OverlapScore;
-                        }).FirstOrDefault(n => path.ToSkip[n.TargetSeqCodename] == false);
+                            return (path.ToSkip.Contains(n.TargetSeqName) || path.Overlaps.Last().TargetStartCoord > n.QueryStartCoord) ? default : n.OverlapScore;
+                        }).FirstOrDefault(n => path.ToSkip.Contains(n.TargetSeqName) == false);
                     };
 
-        public static Func<Path, List<Overlap>, Overlap> GetBestOverlapByExtensionScore =
+        public static Func<OverlapPath, List<Overlap>, Overlap> GetBestOverlapByExtensionScore =
                     (path, neighbours) => {
                         return neighbours.OrderByDescending(n =>
                         {
-                            return path.ToSkip[n.TargetSeqCodename] || path.Overlaps.Last().TargetStartCoord > n.QueryStartCoord ? default : n.ExtensionScore1;
-                        }).FirstOrDefault(n => path.ToSkip[n.TargetSeqCodename] == false);
+                            return path.ToSkip.Contains(n.TargetSeqName) || path.Overlaps.Last().TargetStartCoord > n.QueryStartCoord ? default : n.ExtensionScore1;
+                        }).FirstOrDefault(n => path.ToSkip.Contains(n.TargetSeqName) == false);
                     };
 
-        public static Func<Path, List<Overlap>, Overlap> GetBestOverlapByMonteCarlo =
+        public static Func<OverlapPath, List<Overlap>, Overlap> GetBestOverlapByMonteCarlo =
                     (next, neighbours) => { 
                         var r = new Random();
                         double sum = neighbours.Sum(n => n.ExtensionScore1);
