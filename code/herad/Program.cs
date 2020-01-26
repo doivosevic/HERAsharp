@@ -25,6 +25,8 @@ namespace herad
             Console.WriteLine("Bye World!");
             s.Stop();
             Console.WriteLine(s.ElapsedMilliseconds / 1000);
+
+
         }
 
     }

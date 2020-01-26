@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -34,6 +35,8 @@ namespace herad
 
             Console.WriteLine("Got final path overlaps");
 
+            Console.WriteLine(string.Join("", completePath.Select(t => "(" + t.QuerySeqName + "," + t.TargetSeqName + ")")));
+
             string final = BuildSequenceFromOverlaps(completePath);
 
             string folder = @"C:\git\HERAsharp\code\data\ec_test2";
@@ -41,6 +44,79 @@ namespace herad
         }
 
         private static string BuildSequenceFromOverlaps(List<Overlap> completePath)
+        {
+            StringBuilder sb = new StringBuilder();
+            bool firstStrand = true;
+
+            // QUERY 0 ITERATOR
+            int q0It = 0;
+
+            // OVERLAP END IT
+            int oEIt = 0;
+
+            for (int i = 0; i < completePath.Count; ++i)
+            {
+                var ol = completePath[i];
+                var leftSeq = OverlapPath.AllSeqs[ol.QuerySeqName];
+
+                var queryStart = ol.QueryStartCoord;
+                var targetStart = ol.TargetStartCoord;
+                var queryEnd = ol.QueryEndCoord;
+                var sameStrand = ol.SameStrand;
+                //var targetEnd = ol.TargetEndCoord;
+
+                if (!sameStrand && !firstStrand)
+                {
+                    queryStart = ol.QuerySeqLen - ol.QueryEndCoord;
+                    queryEnd = ol.QuerySeqLen - ol.QueryStartCoord;
+                }else if (sameStrand && !firstStrand) {
+
+                    queryStart = ol.QuerySeqLen - ol.QueryEndCoord;
+                    queryEnd = ol.QuerySeqLen - ol.QueryStartCoord;
+                    targetStart = ol.TargetSeqLen - ol.TargetEndCoord + 5000;
+                }
+                else if (!sameStrand && firstStrand)
+                {
+                    targetStart = ol.TargetSeqLen - ol.TargetEndCoord + 5000;
+                }
+
+                int startDiff = queryStart - targetStart;
+
+
+                //if (ol.SameStrand && !firstStrand)
+                //{
+                //    startDiff = -startDiff;
+                //    ol = ol.GetFlipped();
+                //}
+
+                var absQEnd = q0It + queryEnd;
+
+                if (absQEnd > oEIt)
+                {
+                    int addedLen = absQEnd - oEIt;
+                    int posOnLeftStrand = oEIt - q0It;
+                    sb.Append(leftSeq.Content.Substring(posOnLeftStrand, addedLen).Flip(firstStrand));
+                    oEIt = absQEnd;
+                }
+
+                if (sameStrand == false) firstStrand = !firstStrand;
+                q0It += startDiff;
+            }
+
+            var lastOl = completePath.Last();
+            var lastTargetStart = q0It + lastOl.QueryStartCoord - lastOl.TargetStartCoord;
+            var lastTargetTotalEnd = lastTargetStart + lastOl.TargetSeqLen;
+            if (lastTargetTotalEnd - oEIt > 0)
+            {
+                var rightSeq = OverlapPath.AllSeqs[lastOl.TargetSeqName];
+                sb.Append(rightSeq.Content.Substring(lastOl.TargetEndCoord));
+            }
+
+            string final = sb.ToString();
+            return final;
+        }
+
+        private static string BuildSequenceFromOverlaps2(List<Overlap> completePath)
         {
             StringBuilder sb = new StringBuilder();
             int iter = 0;
@@ -81,7 +157,7 @@ namespace herad
                     if (ol.SameStrand == false) firstStrand = !firstStrand;
 
                     int len = (ol.TargetEndCoord - start);
-                    sb.Append(Utilities.Flip(firstStrand, rightSeq.Content.Substring(start, len)));
+                    sb.Append(rightSeq.Content.Substring(start, len).Flip(firstStrand));
 
                     if (i == completePath.Count - 1)
                     {
@@ -98,7 +174,7 @@ namespace herad
 
         private static List<(string, string, List<OverlapPath>, OverlapPath)> GetConsensusSequences(List<Seq> aSeqs, Dictionary<string, List<Overlap>> allOverlaps)
         {
-            List<(string, string, List<OverlapPath>, OverlapPath)> listOfConsensuses = new List<(string, string, List<OverlapPath>, OverlapPath)>();
+            ConcurrentBag<(string, string, List<OverlapPath>, OverlapPath)> listOfConsensuses = new ConcurrentBag<(string, string, List<OverlapPath>, OverlapPath)>();
 
             var options = new ParallelOptions();
             options.MaxDegreeOfParallelism = 8;
@@ -128,7 +204,7 @@ namespace herad
                 }
             });
 
-            return listOfConsensuses;
+            return listOfConsensuses.ToList();
         }
 
         private static List<Overlap> GetFinalPathOverlaps(List<(string, string, List<OverlapPath>, OverlapPath)> listOfConsensuses, List<(string, string)> graph)
@@ -167,8 +243,9 @@ namespace herad
         private static List<(string, string)> GetConnectionGraph(List<(string, string, List<OverlapPath>, OverlapPath)> listOfConsensuses)
         {
             var graph = new List<(string, string)>();
+            var ordered = listOfConsensuses.OrderByDescending(g => g.Item3.Count);
 
-            foreach ((string leftCtg, string rightCtg, List<OverlapPath> paths, OverlapPath conensus) in listOfConsensuses.OrderByDescending(g => g.Item3.Count))
+            foreach ((string leftCtg, string rightCtg, List<OverlapPath> paths, OverlapPath conensus) in ordered)
             {
 
                 if (graph.Contains((leftCtg, rightCtg)) || graph.Contains((leftCtg, rightCtg))) continue;

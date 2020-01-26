@@ -82,8 +82,12 @@ namespace herad
 
         public double OverlapScore;
 
+        public int Flipped = 0;
+
         public Overlap GetFlipped()
         {
+            Flipped++;
+
             return new Overlap(
             this.TargetSeqName, this.TargetSeqLen, this.TargetStartCoord, this.TargetEndCoord,
             this.SameStrand,
