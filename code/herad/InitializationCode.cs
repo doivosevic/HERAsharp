@@ -22,7 +22,7 @@ namespace herad
             IEnumerable<Overlap> readToContigOverlaps = PafToOverlap(paf);
 
             var readToReadPaf = readToRead.Select(s => s.Split('\t')).ToList();
-            IEnumerable<Overlap> readToReadOverlaps = PafToOverlap(readToReadPaf);
+            IEnumerable<Overlap> readToReadOverlaps = PafToOverlap(readToReadPaf).Where(o => o.OverlapScore * 1.0 / o.QuerySeqLen < 0.99 && o.OverlapScore * 1.0 / o.TargetSeqLen < 0.99).ToList();
 
             var contigReadsOverlapsDict = CreateLookupDictOfOverlapsByName(readToContigOverlaps);
             var readsReadsOverlapsDict = CreateLookupDictOfOverlapsByName(readToReadOverlaps);

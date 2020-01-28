@@ -14,9 +14,22 @@ namespace herad
 
             //HeraMain.Run(args[1], args[2], args[3], args[4]);
 
+            //string settingsFile = "";
+
+            //bool settingsFileExists = false;
+            //if (File.Exists(settingsFile))
+            //{
+            //    var lines = File.ReadAllLines(settingsFile);
+            //    if (TryParseSettingsFile(lines))
+            //    {
+            //        settingsFileExists = true;
+            //    }
+            //}
+            
+
             string folder = @"C:\git\HERAsharp\code\data\ec_test2";
-            string p1 = "ecoli_test_reads_1.fasta";
-            string p2 = "ecoli_test_contigs.fasta";
+            string p1 = "reads.fasta";
+            string p2 = "contigs.fasta";
             string p3 = "read_to_read.paf";
             string p4 = "read_to_contig.paf";
 
@@ -29,5 +42,6 @@ namespace herad
 
         }
 
+        private static bool TryParseSettingsFile(string[] lines) => throw new NotImplementedException();
     }
 }

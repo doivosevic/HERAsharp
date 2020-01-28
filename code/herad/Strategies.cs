@@ -12,7 +12,7 @@ namespace herad
                     (path, neighbours) => {
                         return neighbours.OrderByDescending(n =>
                         {
-                            return (path.ToSkip.Contains(n.TargetSeqName) || path.Overlaps.Last().TargetStartCoord > n.QueryStartCoord) ? default : n.OverlapScore;
+                            return (path.ToSkip.Contains(n.TargetSeqName) || n.TargetStartCoord < n.QueryStartCoord) ? default : n.OverlapScore;
                         }).FirstOrDefault(n => path.ToSkip.Contains(n.TargetSeqName) == false);
                     };
 
@@ -20,7 +20,7 @@ namespace herad
                     (path, neighbours) => {
                         return neighbours.OrderByDescending(n =>
                         {
-                            return path.ToSkip.Contains(n.TargetSeqName) || path.Overlaps.Last().TargetStartCoord > n.QueryStartCoord ? default : n.ExtensionScore1;
+                            return path.ToSkip.Contains(n.TargetSeqName) || n.TargetStartCoord < n.QueryStartCoord ? default : n.ExtensionScore1;
                         }).FirstOrDefault(n => path.ToSkip.Contains(n.TargetSeqName) == false);
                     };
 
