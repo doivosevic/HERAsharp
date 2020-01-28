@@ -11,14 +11,14 @@ namespace herad
 {
     public static class HeraMain
     {
-        public static void Run(string readsPath, string contigsPath, string readToReadPath, string readToContigPath)
+        public static string Run(string readsPath, string contigsPath, string readToReadPath, string readToContigPath)
         {
             (List<Seq> aSeqs, Dictionary<string, List<Overlap>> allOverlaps) = InitializationCode.SetupVariables(readsPath, contigsPath, readToReadPath, readToContigPath);
 
-            MainLogic(aSeqs, allOverlaps);
+            return MainLogic(aSeqs, allOverlaps);
         }
 
-        private static void MainLogic(List<Seq> aSeqs, Dictionary<string, List<Overlap>> allOverlaps)
+        private static string MainLogic(List<Seq> aSeqs, Dictionary<string, List<Overlap>> allOverlaps)
         {
             // GENERATION OF CONSENSUS SEQUENCES
             List<(string, string, List<OverlapPath>, OverlapPath)> listOfConsensuses = GetConsensusSequences(aSeqs, allOverlaps);
@@ -38,9 +38,7 @@ namespace herad
             Console.WriteLine(string.Join("", completePath.Select(t => "(" + t.QuerySeqName + "," + t.TargetSeqName + ")")));
 
             string final = BuildSequenceFromOverlaps(completePath);
-
-            string folder = @"C:\git\HERAsharp\code\data\ec_test2";
-            File.WriteAllText(Path.Join(folder, "complete.fasta"), ">finalsequence" + Environment.NewLine + final);
+            return final;
         }
 
         private static string BuildSequenceFromOverlaps(List<Overlap> completePath)

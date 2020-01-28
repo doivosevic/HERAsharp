@@ -33,7 +33,9 @@ namespace herad
             string p3 = "read_to_read.paf";
             string p4 = "read_to_contig.paf";
 
-            HeraMain.Run(readsPath: Path.Combine(folder, p1), contigsPath: Path.Combine(folder, p2), readToReadPath: Path.Combine(folder, p3), readToContigPath: Path.Combine(folder, p4));
+            var result = HeraMain.Run(readsPath: Path.Combine(folder, p1), contigsPath: Path.Combine(folder, p2), readToReadPath: Path.Combine(folder, p3), readToContigPath: Path.Combine(folder, p4));
+
+            File.WriteAllText(Path.Join(folder, "complete.fasta"), ">finalsequence" + Environment.NewLine + result);
 
             Console.WriteLine("Bye World!");
             s.Stop();
