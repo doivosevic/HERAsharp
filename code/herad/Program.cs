@@ -12,20 +12,10 @@ namespace herad
             s.Start();
             Console.WriteLine("Hello World!");
 
-            //HeraMain.Run(args[1], args[2], args[3], args[4]);
+            //var settings = new Settings();
+            //settings.FileToSettings(args[0]);
 
-            //string settingsFile = "";
-
-            //bool settingsFileExists = false;
-            //if (File.Exists(settingsFile))
-            //{
-            //    var lines = File.ReadAllLines(settingsFile);
-            //    if (TryParseSettingsFile(lines))
-            //    {
-            //        settingsFileExists = true;
-            //    }
-            //}
-            
+            //HeraMain.Run(settings.ReadsPath, settings.ContigsPath, settings.ReadToReadPath, settings.ReadToContigPath);
 
             string folder = @"C:\git\HERAsharp\code\data\ec_test2";
             string p1 = "reads.fasta";
