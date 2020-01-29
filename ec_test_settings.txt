@@ -1,4 +1,4 @@
-C:\git\data\EColi_synthetic
+/mnt/c/git/data/EColi_synthetic
 reads.fasta
 contigs.fasta
 read_to_read.paf
