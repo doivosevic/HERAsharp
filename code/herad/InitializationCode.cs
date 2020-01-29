@@ -18,6 +18,16 @@ namespace herad
             readss = readss[0].StartsWith(">") == false ? readss : readss.Select(r => r.StartsWith(">") ? r.Substring(1) : r).ToArray();
             contigss = contigss[0].StartsWith(">") == false ? contigss : contigss.Select(r => r.StartsWith(">") ? r.Substring(1) : r).ToArray();
 
+            var reads = ToDict(readss);
+            List<Seq> rSeqs = reads.Select(r => new Seq(r.Key, r.Value, SeqType.R)).ToList();
+
+            var contigs = ToDict(contigss);
+            List<Seq> aSeqs = contigs.Select(c => new Seq(c.Key, c.Value, SeqType.A)).ToList();
+
+            var allSeqs = rSeqs.Concat(aSeqs).ToDictionary(s => s.Name, s => s);
+
+            Path.AllSeqs = allSeqs;
+
             var paf = readToContig.Select(s => s.Split('\t')).ToList();
             IEnumerable<Overlap> readToContigOverlaps = PafToOverlap(paf);
 
@@ -31,15 +41,6 @@ namespace herad
             contigReadsOverlapsDict.ToList().ForEach(p => { if (allOverlaps.ContainsKey(p.Key)) { allOverlaps[p.Key].AddRange(p.Value); } else { allOverlaps[p.Key] = p.Value.ToList(); } });
 
 
-            var reads = ToDict(readss);
-            List<Seq> rSeqs = reads.Select(r => new Seq(r.Key, r.Value, SeqType.R)).ToList();
-
-            var contigs = ToDict(contigss);
-            List<Seq> aSeqs = contigs.Select(c => new Seq(c.Key, c.Value, SeqType.A)).ToList();
-
-            var allSeqs = rSeqs.Concat(aSeqs).ToDictionary(s => s.Name, s => s);
-
-            Path.AllSeqs = allSeqs;
 
             return (aSeqs, allOverlaps);
         }
@@ -63,15 +64,6 @@ namespace herad
             // Mapping paf overlaps to overlap class constructor
             return paf.Select(p => new Overlap(p[0], IP(p[1]), IP(p[2]), IP(p[3]), p[4] == "+", p[5], IP(p[6]),
                 IP(p[7]), IP(p[8]), IP(p[9]), IP(p[10]), IP(p[11]), p[12], p[13], p[14], p[15]));
-        }
-
-        private static string[] GetDataFile(string pattern)
-        {
-            var dataFolder = Directory.GetDirectories(Directory.GetCurrentDirectory()).First();
-            var dataFiles = Directory.GetFiles(dataFolder);
-
-            var contigs = File.ReadAllLines(dataFiles.FirstOrDefault(f => f.Contains(pattern)));
-            return contigs;
         }
 
         private static Dictionary<string, string> ToDict(string[] contigs)

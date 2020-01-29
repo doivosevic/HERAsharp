@@ -29,6 +29,9 @@ namespace herad
 
         public int TargetSeqCodename;
 
+        public bool IsQueryContig { get; }
+        public bool IsTargetContig { get; }
+
         // 7	int	Target sequence length
         public int TargetSeqLen;
 
@@ -59,6 +62,9 @@ namespace herad
             this.QuerySeqCodename = GetCodename(this.QuerySeqName);
             this.TargetSeqCodename = GetCodename(this.TargetSeqName);
 
+            this.IsQueryContig = Path.AllSeqs[this.QuerySeqName].SeqType == SeqType.A;
+            this.IsTargetContig = Path.AllSeqs[this.TargetSeqName].SeqType == SeqType.A;
+
             this.Identity = 1.0 * this.NumMatching / this.NumAll;
 
             this.OverlapScore = (this.QueryEndCoord - this.QueryStartCoord + this.TargetEndCoord - this.TargetStartCoord) * 1.0 / 2.0;
@@ -68,8 +74,7 @@ namespace herad
 
         private static int GetCodename(string name)
         {
-            if (name.StartsWith("ctg", StringComparison.CurrentCultureIgnoreCase)) return int.Parse(name.Substring("ctg".Length));
-            else return int.Parse(name.Substring("read".Length)) + 10;
+            return Path.AllSeqs[name].Codename;
         }
 
 

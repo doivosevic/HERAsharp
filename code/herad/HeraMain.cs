@@ -122,20 +122,18 @@ namespace herad
 
             Parallel.ForEach(aSeqs, options, ctg =>
             {
-                var ctgName = int.Parse(ctg.Name.Substring("ctg".Length));
-
-                var firstContigOverlaps = allOverlaps[ctgName];
+                var firstContigOverlaps = allOverlaps[ctg.Codename];
 
                 // FINDING PATHS BETWEEN ANCHORING NODES IN HERA
                 List<Path> pathsUsingOverlapScore = GetPathsUsingStrategy(allOverlaps, firstContigOverlaps, Strategies.GetBestOverlapByOverlapScore);
 
-                List<(int Key, List<Path>)> byEndContig = pathsUsingOverlapScore.GroupBy(p => p.Overlaps.Last().TargetSeqCodename).Select(g => (g.Key, g.ToList())).Where(g => g.Key != ctgName).ToList();
+                List<(int Key, List<Path>)> byEndContig = pathsUsingOverlapScore.GroupBy(p => p.Overlaps.Last().TargetSeqCodename).Select(g => (g.Key, g.ToList())).Where(g => g.Key != ctg.Codename).ToList();
 
                 foreach (var keyCtg in byEndContig)
                 {
                     var consensus = GetConsensusSequenceAndItsGroup(keyCtg.Item2);
 
-                    listOfConsensuses.Add((ctgName, keyCtg.Key, consensus.Item2, consensus.Item1));
+                    listOfConsensuses.Add((ctg.Codename, keyCtg.Key, consensus.Item2, consensus.Item1));
                 }
             });
 
@@ -278,7 +276,7 @@ namespace herad
                 nexty.AddOverlap(best);
 
                 // If best option is to connect the read to contig
-                if (best.TargetSeqCodename < 10) // TODO: Find better way to ensure the target is contig
+                if (best.IsTargetContig)
                 {
                     finalized.Add(nexty);
                     continue; // This path is complete and don't process it in the queue anymore
