@@ -6,40 +6,47 @@ using System.Text;
 
 namespace herad
 {
-    class Settings
+    public static class Settings
     {
-        public string Folder { get; set; }
+        public static string Folder { get; set; }
 
-        private string _ReadsPath;
-        public string ReadsPath {
+        private static string _ReadsPath;
+        public static string ReadsPath {
             get { return Path.Combine(Folder, _ReadsPath); }
             set { _ReadsPath = value; }
         }
 
-        private string _ContigsPath;
-        public string ContigsPath
+        private static string _ContigsPath;
+        public static string ContigsPath
         {
             get { return Path.Combine(Folder, _ContigsPath); }
             set => _ContigsPath = value;
         }
 
-        private string _ReadToReadPath;
-        public string ReadToReadPath
+        private static string _ReadToReadPath;
+        public static string ReadToReadPath
         {
             get { return Path.Combine(Folder, _ReadToReadPath); }
             set { _ReadToReadPath = value; }
         }
 
-        private string _ReadToContigPath;
-        public string ReadToContigPath
+        private static string _ReadToContigPath;
+        public static string ReadToContigPath
         {
             get { return Path.Combine(Folder, _ReadToContigPath); }
             set { _ReadToContigPath = value; }
         }
 
-        public void FileToSettings(string path)
+        private static string _ResultingFileName;
+        public static string ResultingFileName
         {
-            var settingsFileExists = false;
+            get { return Path.Combine(Folder, _ResultingFileName); }
+            set { _ResultingFileName = value; }
+        }
+
+        public static bool FileToSettings(string path)
+        {
+            var successfullyParsed = false;
             if (File.Exists(path))
             {
                 var lines = File.ReadAllLines(path);
@@ -47,26 +54,24 @@ namespace herad
                 
                 if (TryParseSettingsFile(lines))
                 {
-                    settingsFileExists = true;
+                    successfullyParsed = true;
                 }
             }
-            
-            if (!settingsFileExists)
-            {
-                throw new Exception($"Settings file could not be parsed. Check if file is correctly set.");
-            }
+
+            return successfullyParsed;
         }
 
-        private bool TryParseSettingsFile(string[] lines)
+        private static bool TryParseSettingsFile(string[] lines)
         {
             try
             {
                 // this.folder = ParseLine(lines[0]);
-                this.Folder = lines[0];
-                this.ReadsPath = lines[1];
-                this.ContigsPath = lines[1];
-                this.ReadToReadPath = lines[1];
-                this.ReadToContigPath = lines[1];
+                Folder = lines[0];
+                ReadsPath = lines[1];
+                ContigsPath = lines[2];
+                ReadToReadPath = lines[3];
+                ReadToContigPath = lines[4];
+                ResultingFileName = lines[5];
 
                 return true;
             }
@@ -81,7 +86,7 @@ namespace herad
         /// </summary>
         /// <param name="line"></param>
         /// <returns></returns>
-        private string ParseLine(string line)
+        private static string ParseLine(string line)
         {
             string parser = "=";
             try

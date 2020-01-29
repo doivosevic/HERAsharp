@@ -8,12 +8,12 @@ namespace herad
 {
     public static class InitializationCode
     {
-        public static (List<Seq> aSeqs, Dictionary<string, List<Overlap>> allOverlaps) SetupVariables(string readsPath, string contigsPath, string readToReadPath, string readToContigPath)
+        public static (List<Seq> aSeqs, Dictionary<string, List<Overlap>> allOverlaps) SetupVariables()
         {
-            string[] readToContig = File.ReadAllLines(readToContigPath);
-            string[] readToRead = File.ReadAllLines(readToReadPath);
-            string[] readss = File.ReadAllLines(readsPath);
-            string[] contigss = File.ReadAllLines(contigsPath);
+            string[] readToContig = File.ReadAllLines(Settings.ReadToContigPath);
+            string[] readToRead = File.ReadAllLines(Settings.ReadToReadPath);
+            string[] readss = File.ReadAllLines(Settings.ReadsPath);
+            string[] contigss = File.ReadAllLines(Settings.ContigsPath);
 
             readss = readss[0].StartsWith(">") == false ? readss : readss.Select(r => r.StartsWith(">") ? r.Substring(1) : r).ToArray();
             contigss = contigss[0].StartsWith(">") == false ? contigss : contigss.Select(r => r.StartsWith(">") ? r.Substring(1) : r).ToArray();

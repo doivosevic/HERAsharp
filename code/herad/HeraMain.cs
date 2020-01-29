@@ -11,9 +11,9 @@ namespace herad
 {
     public static class HeraMain
     {
-        public static string Run(string readsPath, string contigsPath, string readToReadPath, string readToContigPath)
+        public static string Run()
         {
-            (List<Seq> aSeqs, Dictionary<string, List<Overlap>> allOverlaps) = InitializationCode.SetupVariables(readsPath, contigsPath, readToReadPath, readToContigPath);
+            (List<Seq> aSeqs, Dictionary<string, List<Overlap>> allOverlaps) = InitializationCode.SetupVariables();
 
             return MainLogic(aSeqs, allOverlaps);
         }
@@ -120,7 +120,7 @@ namespace herad
             ConcurrentBag<(string, string, List<OverlapPath>, OverlapPath)> listOfConsensuses = new ConcurrentBag<(string, string, List<OverlapPath>, OverlapPath)>();
 
             var options = new ParallelOptions();
-            options.MaxDegreeOfParallelism = 1;
+            options.MaxDegreeOfParallelism = 8;
 
             Parallel.ForEach(aSeqs, options, ctg =>
             {
@@ -132,12 +132,12 @@ namespace herad
                 List<OverlapPath> pathsUsingOverlapScore = GetPathsUsingStrategy(allOverlaps, firstContigOverlaps, Strategies.GetBestOverlapByOverlapScore);
 
                 // APPROACH II
-                List<OverlapPath> pathsUsingExtensionScore = GetPathsUsingStrategy(allOverlaps, firstContigOverlaps, Strategies.GetBestOverlapByExtensionScore);
+                //List<OverlapPath> pathsUsingExtensionScore = GetPathsUsingStrategy(allOverlaps, firstContigOverlaps, Strategies.GetBestOverlapByExtensionScore);
 
                 // APPROACH III
                 //List<Path> pathsUsingMonteCarlo = GetPathsUsingStrategy(allOverlaps, firstContigOverlaps, Strategies.GetBestOverlapByMonteCarlo);
 
-                var allPaths = pathsUsingOverlapScore.Concat(pathsUsingExtensionScore);
+                //var allPaths = pathsUsingOverlapScore.Concat(pathsUsingExtensionScore);
 
                 List<(string Key, List<OverlapPath>)> byEndContig = pathsUsingOverlapScore.GroupBy(p => p.Overlaps.Last().TargetSeqName).Select(g => (g.Key, g.ToList())).Where(g => g.Key != ctg.Name).ToList();
 
@@ -149,7 +149,7 @@ namespace herad
                 }
             });
 
-            return listOfConsensuses.Reverse().ToList();
+            return listOfConsensuses.ToList();
         }
 
         private static List<Overlap> GetFinalPathOverlaps(List<(string, string, List<OverlapPath>, OverlapPath)> listOfConsensuses, List<(string, string)> graph)
@@ -286,7 +286,9 @@ namespace herad
                 queueOfInterestingOverlaps.Enqueue(nexty);
             }
 
-            return finalized.Where(p => p.Length > 0).ToList();
+            var avg = finalized.Average(p => p.Length);
+
+            return finalized.Where(p => p.Length > avg / 10000).ToList();
         }
     }
 }
