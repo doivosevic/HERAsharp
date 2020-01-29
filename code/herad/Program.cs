@@ -12,9 +12,12 @@ namespace herad
             s.Start();
 
             Console.WriteLine("Hello World!");
+            Console.WriteLine(string.Join(",", args));
 
-            if (args.Length < 2 || !Settings.FileToSettings(args[1]))
+            if (args.Length != 1 || !Settings.FileToSettings(args[0]))
             {
+                Console.WriteLine("Invalid settings file. Using default values");
+
                 Settings.Folder = @"C:\git\HERAsharp\code\data\ec_test2";
                 Settings.ReadsPath = "reads.fasta";
                 Settings.ContigsPath = "contigs.fasta";

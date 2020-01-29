@@ -31,7 +31,6 @@ namespace herad
                         double selection = sum * r.NextDouble();
 
                         double soFar = 0;
-                        return default;
                         Overlap selected = neighbours.SkipWhile(n => (soFar = n.ExtensionScore1) < selection).First();
 
                         return selected;

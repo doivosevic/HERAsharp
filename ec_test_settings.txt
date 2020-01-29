@@ -1,0 +1,6 @@
+C:\git\data\EColi_synthetic
+reads.fasta
+contigs.fasta
+read_to_read.paf
+read_to_contig.paf
+complete.fasta

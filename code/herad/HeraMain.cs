@@ -118,7 +118,7 @@ namespace herad
             List<(int, int, List<Path>, Path)> listOfConsensuses = new List<(int, int, List<Path>, Path)>();
 
             var options = new ParallelOptions();
-            options.MaxDegreeOfParallelism = 8;
+            options.MaxDegreeOfParallelism = 1;
 
             Parallel.ForEach(aSeqs, options, ctg =>
             {
@@ -127,8 +127,6 @@ namespace herad
                 var firstContigOverlaps = allOverlaps[ctgName];
 
                 // FINDING PATHS BETWEEN ANCHORING NODES IN HERA
-
-                // APPROACH I
                 List<Path> pathsUsingOverlapScore = GetPathsUsingStrategy(allOverlaps, firstContigOverlaps, Strategies.GetBestOverlapByOverlapScore);
 
                 List<(int Key, List<Path>)> byEndContig = pathsUsingOverlapScore.GroupBy(p => p.Overlaps.Last().TargetSeqCodename).Select(g => (g.Key, g.ToList())).Where(g => g.Key != ctgName).ToList();
@@ -215,7 +213,8 @@ namespace herad
         {
             var byLen = pathsUsingOverlapScore.Select(o => (o.GetPathLength(), o)).OrderByDescending(p => p.Item1).ToList();
 
-            var groupSizes = byLen.Count() / 1;
+            var count = byLen.Count();
+            var groupSizes = count < 1000 ? 1 : count/100;
             var groups = new List<List<Path>>();
             for (int i = 0; i < byLen.Count; i += groupSizes)
             {
@@ -288,7 +287,7 @@ namespace herad
                 queueOfInterestingOverlaps.Enqueue(nexty);
             }
 
-            return finalized.Where(p => p.Length > 0).ToList();
+            return finalized.Where(p => p.Length > 2).ToList();
         }
     }
 }
