@@ -41,48 +41,72 @@ namespace herad
         private static string BuildSequenceFromOverlaps(List<Overlap> completePath)
         {
             StringBuilder sb = new StringBuilder();
-            int iter = 0;
-            var firstOverlap = completePath.First();
-            Seq firstSeq = Path.AllSeqs[firstOverlap.QuerySeqName];
-            sb.Append(firstSeq.Content.Substring(0, firstOverlap.QueryEndCoord));
-            int pathIter = firstOverlap.QueryEndCoord;
             bool firstStrand = true;
 
-            for (int i = 0; i < completePath.Count; i++)
+            // QUERY 0 ITERATOR
+            int q0It = 0;
+
+            // OVERLAP END IT
+            int oEIt = 0;
+
+            for (int i = 0; i < completePath.Count; ++i)
             {
                 var ol = completePath[i];
+                var leftSeq = Path.AllSeqs[ol.QuerySeqName];
 
-                iter += ol.QueryStartCoord - ol.TargetStartCoord;
-                if (pathIter < iter + ol.TargetEndCoord)
+                var queryStart = ol.QueryStartCoord;
+                var targetStart = ol.TargetStartCoord;
+                var queryEnd = ol.QueryEndCoord;
+                var sameStrand = ol.SameStrand;
+                //var targetEnd = ol.TargetEndCoord;
+
+                if (!sameStrand && !firstStrand)
                 {
-                    var rightSeq = Path.AllSeqs[ol.TargetSeqName];
-                    int start = pathIter - iter;
+                    queryStart = ol.QuerySeqLen - ol.QueryEndCoord;
+                    queryEnd = ol.QuerySeqLen - ol.QueryStartCoord;
+                }else if (sameStrand && !firstStrand) {
 
-                    if (start < 0)
-                    {
-                        var leftSeq = Path.AllSeqs[ol.QuerySeqName];
-
-                        var leftOfOverlap = -start + (ol.TargetStartCoord);
-                        var queryStart = ol.QueryStartCoord - leftOfOverlap;
-
-                        sb.Append(leftSeq.Content.Substring(queryStart, -start));
-                        //pathIter += -start;
-                        start = 0;
-                    }
-
-                    if (ol.SameStrand == false) firstStrand = !firstStrand;
-
-                    int len = (ol.TargetEndCoord - start);
-                    var flipped = rightSeq.Content.Flip(firstStrand);
-                    sb.Append(flipped.Substring(start, len));
-
-                    if (i == completePath.Count - 1)
-                    {
-                        sb.Append(rightSeq.Content.Substring(start + len));
-                    }
-
-                    pathIter = iter + ol.TargetEndCoord;
+                    queryStart = ol.QuerySeqLen - ol.QueryEndCoord;
+                    queryEnd = ol.QuerySeqLen - ol.QueryStartCoord;
+                    targetStart = ol.TargetSeqLen - ol.TargetEndCoord;
                 }
+                else if (!sameStrand && firstStrand)
+                {
+                    targetStart = ol.TargetSeqLen - ol.TargetEndCoord;
+                }
+
+                int startDiff = queryStart - targetStart;
+
+
+                //if (ol.SameStrand && !firstStrand)
+                //{
+                //    startDiff = -startDiff;
+                //    ol = ol.GetFlipped();
+                //}
+
+
+                var absQEnd = q0It + queryEnd;
+
+                if (absQEnd > oEIt)
+                {
+                    int addedLen = absQEnd - oEIt;
+                    int posOnLeftStrand = oEIt - q0It;
+                    var flipped = leftSeq.Content.Flip(firstStrand);
+                    sb.Append(flipped.Substring(posOnLeftStrand, addedLen));
+                    oEIt = absQEnd;
+                }
+
+                if (sameStrand == false) firstStrand = !firstStrand;
+                q0It += startDiff;
+            }
+
+            var lastOl = completePath.Last();
+            var lastTargetStart = q0It + lastOl.QueryStartCoord - lastOl.TargetStartCoord;
+            var lastTargetTotalEnd = lastTargetStart + lastOl.TargetSeqLen;
+            if (lastTargetTotalEnd - oEIt > 0)
+            {
+                var rightSeq = Path.AllSeqs[lastOl.TargetSeqName];
+                sb.Append(rightSeq.Content.Substring(lastOl.TargetEndCoord));
             }
 
             string final = sb.ToString();
@@ -191,7 +215,7 @@ namespace herad
         {
             var byLen = pathsUsingOverlapScore.Select(o => (o.GetPathLength(), o)).OrderByDescending(p => p.Item1).ToList();
 
-            var groupSizes = byLen.Count() / 100;
+            var groupSizes = byLen.Count() / 1;
             var groups = new List<List<Path>>();
             for (int i = 0; i < byLen.Count; i += groupSizes)
             {
@@ -264,7 +288,7 @@ namespace herad
                 queueOfInterestingOverlaps.Enqueue(nexty);
             }
 
-            return finalized.Where(p => p.Length > 10).ToList();
+            return finalized.Where(p => p.Length > 0).ToList();
         }
     }
 }

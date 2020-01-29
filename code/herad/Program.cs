@@ -15,9 +15,9 @@ namespace herad
 
             if (args.Length < 2 || !Settings.FileToSettings(args[1]))
             {
-                Settings.Folder = @"C:\git\data\EColi_synthetic";
-                Settings.ReadsPath = "ecoli_test_reads_1.fasta";
-                Settings.ContigsPath = "ecoli_test_contigs.fasta";
+                Settings.Folder = @"C:\git\HERAsharp\code\data\ec_test2";
+                Settings.ReadsPath = "reads.fasta";
+                Settings.ContigsPath = "contigs.fasta";
                 Settings.ReadToReadPath = "read_to_read.paf";
                 Settings.ReadToContigPath = "read_to_contig.paf";
                 Settings.ResultingFileName = "complete.fasta";
