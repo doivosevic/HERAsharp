@@ -10,10 +10,13 @@ namespace herad
     {
         public static (List<Seq> aSeqs, Dictionary<int, List<Overlap>> allOverlaps) SetupVariables(string readsPath = null, string contigsPath = null, string readToReadPath = null, string readToContigPath = null)
         {
-            string[] readToContig = GetDataFile("read_to_contig");
-            string[] readToRead = GetDataFile("read_to_read");
-            string[] readss = GetDataFile("reads_1").Concat(GetDataFile("reads_2")).Concat(GetDataFile("reads_3")).ToArray();
-            string[] contigss = GetDataFile("contig");
+            string[] readToContig = File.ReadAllLines(Settings.ReadToContigPath);
+            string[] readToRead = File.ReadAllLines(Settings.ReadToReadPath);
+            string[] readss = File.ReadAllLines(Settings.ReadsPath);
+            string[] contigss = File.ReadAllLines(Settings.ContigsPath);
+
+            readss = readss[0].StartsWith(">") == false ? readss : readss.Select(r => r.StartsWith(">") ? r.Substring(1) : r).ToArray();
+            contigss = contigss[0].StartsWith(">") == false ? contigss : contigss.Select(r => r.StartsWith(">") ? r.Substring(1) : r).ToArray();
 
             var paf = readToContig.Select(s => s.Split('\t')).ToList();
             IEnumerable<Overlap> readToContigOverlaps = PafToOverlap(paf);

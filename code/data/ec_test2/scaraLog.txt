@@ -1,0 +1,75 @@
+OVERLAPS FOR CONTIGS:
+
+Overlaps for sequence Ctg1 and overlap type 2:
+(Ctg1,Read1) (Ctg1,ReadRC1) 
+Overlaps for sequence Ctg2 and overlap type 1:
+(Ctg2,Read3) (Ctg2,ReadRC3) 
+Overlaps for sequence Ctg2 and overlap type 2:
+(Ctg2,Read2) (Ctg2,ReadRC2) 
+Overlaps for sequence Ctg3 and overlap type 1:
+(Ctg3,Read4) (Ctg3,ReadRC4) 
+
+OVERLAPS FOR READS:
+
+Overlaps for sequence Read2 and overlap type 1:
+(Read2,Read1) 
+Overlaps for sequence Read4 and overlap type 1:
+(Read4,Read3) 
+Overlaps for sequence ReadRC1 and overlap type 1:
+(ReadRC1,Read2) 
+Overlaps for sequence ReadRC2 and overlap type 2:
+(ReadRC2,Read1) (ReadRC2,ReadRC1) 
+Overlaps for sequence ReadRC3 and overlap type 1:
+(ReadRC3,Read4) 
+Overlaps for sequence ReadRC4 and overlap type 2:
+(ReadRC4,Read3) (ReadRC4,ReadRC3) 
+
+EDGES FOR ANCHOR NODES:
+
+Edges for node Ctg1:
+(Ctg1,Read1) (Ctg1,ReadRC1_RC) 
+Edges for node Ctg1_RC:
+(Ctg1_RC,Read1_RC) (Ctg1_RC,ReadRC1) 
+Edges for node Ctg2:
+(Ctg2,Read3_RC) (Ctg2,ReadRC3) (Ctg2,Read2_RC) (Ctg2,ReadRC2) 
+Edges for node Ctg2_RC:
+(Ctg2_RC,Read3) (Ctg2_RC,ReadRC3_RC) (Ctg2_RC,Read2) (Ctg2_RC,ReadRC2_RC) 
+Edges for node Ctg3:
+(Ctg3,Read4) (Ctg3,ReadRC4_RC) 
+Edges for node Ctg3_RC:
+(Ctg3_RC,Read4_RC) (Ctg3_RC,ReadRC4) 
+
+EDGES FOR READ NODES:
+
+Edges for node Read1:
+(Read1,Ctg1) (Read1,Read2) (Read1,ReadRC2_RC) 
+Edges for node Read1_RC:
+(Read1_RC,Ctg1_RC) (Read1_RC,Read2_RC) (Read1_RC,ReadRC2) 
+Edges for node Read2:
+(Read2,Ctg2_RC) (Read2,Read1) (Read2,ReadRC1_RC) 
+Edges for node Read2_RC:
+(Read2_RC,Ctg2) (Read2_RC,Read1_RC) (Read2_RC,ReadRC1) 
+Edges for node Read3:
+(Read3,Ctg2_RC) (Read3,Read4) (Read3,ReadRC4_RC) 
+Edges for node Read3_RC:
+(Read3_RC,Ctg2) (Read3_RC,Read4_RC) (Read3_RC,ReadRC4) 
+Edges for node Read4:
+(Read4,Ctg3) (Read4,Read3) (Read4,ReadRC3_RC) 
+Edges for node Read4_RC:
+(Read4_RC,Ctg3_RC) (Read4_RC,Read3_RC) (Read4_RC,ReadRC3) 
+Edges for node ReadRC1:
+(ReadRC1,Ctg1_RC) (ReadRC1,Read2_RC) (ReadRC1,ReadRC2) 
+Edges for node ReadRC1_RC:
+(ReadRC1_RC,Ctg1) (ReadRC1_RC,Read2) (ReadRC1_RC,ReadRC2_RC) 
+Edges for node ReadRC2:
+(ReadRC2,Ctg2) (ReadRC2,Read1_RC) (ReadRC2,ReadRC1) 
+Edges for node ReadRC2_RC:
+(ReadRC2_RC,Ctg2_RC) (ReadRC2_RC,Read1) (ReadRC2_RC,ReadRC1_RC) 
+Edges for node ReadRC3:
+(ReadRC3,Ctg2) (ReadRC3,Read4_RC) (ReadRC3,ReadRC4) 
+Edges for node ReadRC3_RC:
+(ReadRC3_RC,Ctg2_RC) (ReadRC3_RC,Read4) (ReadRC3_RC,ReadRC4_RC) 
+Edges for node ReadRC4:
+(ReadRC4,Ctg3_RC) (ReadRC4,Read3_RC) (ReadRC4,ReadRC3) 
+Edges for node ReadRC4_RC:
+(ReadRC4_RC,Ctg3) (ReadRC4_RC,Read3) (ReadRC4_RC,ReadRC3_RC) 

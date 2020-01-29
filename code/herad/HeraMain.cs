@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,26 +10,32 @@ namespace herad
 {
     public static class HeraMain
     {
-        public static void Run()
+        public static string Run()
         {
             (List<Seq> aSeqs, Dictionary<int, List<Overlap>> allOverlaps) = InitializationCode.SetupVariables();
 
-            MainLogic(aSeqs, allOverlaps);
+            return MainLogic(aSeqs, allOverlaps);
         }
 
-        private static void MainLogic(List<Seq> aSeqs, Dictionary<int, List<Overlap>> allOverlaps)
+        private static string MainLogic(List<Seq> aSeqs, Dictionary<int, List<Overlap>> allOverlaps)
         {
             // GENERATION OF CONSENSUS SEQUENCES
             List<(int, int, List<Path>, Path)> listOfConsensuses = GetConsensusSequences(aSeqs, allOverlaps);
+            Console.WriteLine("Got consensuses");
 
             // CONSTRUCTION OF OVERLAP GRAPH
             List<(int, int)> graph = GetConnectionGraph(listOfConsensuses);
+            Console.WriteLine("Got connection graph");
 
             // FINAL SEQUENCE ASSEMBLY
             List<Overlap> completePath = GetFinalPathOverlaps(listOfConsensuses, graph);
-            string final = BuildSequenceFromOverlaps(completePath);
 
-            File.WriteAllText("complete.fasta", ">finalsequence" + Environment.NewLine + final);
+            Console.WriteLine("Got final path overlaps");
+
+            Console.WriteLine(string.Join("", completePath.Select(t => "(" + t.QuerySeqName + "," + t.TargetSeqName + ")")));
+
+            string final = BuildSequenceFromOverlaps(completePath);
+            return final;
         }
 
         private static string BuildSequenceFromOverlaps(List<Overlap> completePath)
@@ -38,7 +43,7 @@ namespace herad
             StringBuilder sb = new StringBuilder();
             int iter = 0;
             var firstOverlap = completePath.First();
-            Seq firstSeq = Path.AllSeqs[">" + firstOverlap.QuerySeqName];
+            Seq firstSeq = Path.AllSeqs[firstOverlap.QuerySeqName];
             sb.Append(firstSeq.Content.Substring(0, firstOverlap.QueryEndCoord));
             int pathIter = firstOverlap.QueryEndCoord;
             bool firstStrand = true;
@@ -50,12 +55,12 @@ namespace herad
                 iter += ol.QueryStartCoord - ol.TargetStartCoord;
                 if (pathIter < iter + ol.TargetEndCoord)
                 {
-                    var rightSeq = Path.AllSeqs[">" + ol.TargetSeqName];
+                    var rightSeq = Path.AllSeqs[ol.TargetSeqName];
                     int start = pathIter - iter;
 
                     if (start < 0)
                     {
-                        var leftSeq = Path.AllSeqs[">" + ol.QuerySeqName];
+                        var leftSeq = Path.AllSeqs[ol.QuerySeqName];
 
                         var leftOfOverlap = -start + (ol.TargetStartCoord);
                         var queryStart = ol.QueryStartCoord - leftOfOverlap;
@@ -68,7 +73,8 @@ namespace herad
                     if (ol.SameStrand == false) firstStrand = !firstStrand;
 
                     int len = (ol.TargetEndCoord - start);
-                    sb.Append(Utilities.Flip(firstStrand, rightSeq.Content.Substring(start, len)));
+                    var flipped = rightSeq.Content.Flip(firstStrand);
+                    sb.Append(flipped.Substring(start, len));
 
                     if (i == completePath.Count - 1)
                     {
@@ -92,7 +98,7 @@ namespace herad
 
             Parallel.ForEach(aSeqs, options, ctg =>
             {
-                var ctgName = int.Parse(ctg.Name.Substring(1 + "ctg".Length));
+                var ctgName = int.Parse(ctg.Name.Substring("ctg".Length));
 
                 var firstContigOverlaps = allOverlaps[ctgName];
 
@@ -100,12 +106,6 @@ namespace herad
 
                 // APPROACH I
                 List<Path> pathsUsingOverlapScore = GetPathsUsingStrategy(allOverlaps, firstContigOverlaps, Strategies.GetBestOverlapByOverlapScore);
-
-                // APPROACH II
-                List<Path> pathsUsingExtensionScore = GetPathsUsingStrategy(allOverlaps, firstContigOverlaps, Strategies.GetBestOverlapByExtensionScore);
-
-                // APPROACH III
-                List<Path> pathsUsingMonteCarlo = GetPathsUsingStrategy(allOverlaps, firstContigOverlaps, Strategies.GetBestOverlapByMonteCarlo);
 
                 List<(int Key, List<Path>)> byEndContig = pathsUsingOverlapScore.GroupBy(p => p.Overlaps.Last().TargetSeqCodename).Select(g => (g.Key, g.ToList())).Where(g => g.Key != ctgName).ToList();
 

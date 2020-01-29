@@ -68,7 +68,7 @@ namespace herad
 
         private static int GetCodename(string name)
         {
-            if (name.StartsWith("ctg")) return int.Parse(name.Substring("ctg".Length));
+            if (name.StartsWith("ctg", StringComparison.CurrentCultureIgnoreCase)) return int.Parse(name.Substring("ctg".Length));
             else return int.Parse(name.Substring("read".Length)) + 10;
         }
 
@@ -89,8 +89,12 @@ namespace herad
 
         public double OverlapScore;
 
+        public int Flipped = 0;
+
         public Overlap GetFlipped()
         {
+            Flipped++;
+
             return new Overlap(
             this.TargetSeqName, this.TargetSeqLen, this.TargetStartCoord, this.TargetEndCoord,
             this.SameStrand,
